@@ -7,13 +7,13 @@ SDETool2 uses the Dust514 Static Data Export to poll for info.
 
 Building
 ========
-You need [Go](http://golang.org) with your GOPATH environment variable setup our dependencies
+You need [Go](http://golang.org) with your GOPATH environment variable setup with our dependencies
 
-On Windows you will need a matching version of GCC which you can usually get from either [Cygwin](http://www.cygwin.com/) or [Mingw](http://www.mingw.org/)  I use Mingw so that's your best bet.  It must match the CPU architecture as what you're building for (386, amd64).
+On Windows you will need GCC which you can usually get from either [Cygwin](http://www.cygwin.com/) or [Mingw](http://www.mingw.org/)  I use Mingw so that's your best bet.  It must match the CPU architecture as what you're building for.
 
 In Linux you'll need build-essentials.  Installing it can depend on your distro however you should be able to figure this out if you need.
 ``` bash
-make dep
+make deps
 ```
 Should download our dependencies for you
 
