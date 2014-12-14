@@ -193,7 +193,7 @@ func (s *SDEType) GetSharedTagTypes() ([]*SDEType, error) {
 }
 
 // ToJSON returns a Marshaled and indented version of our SDEType.
-func (c *SDEType) ToJSON() (string, error) {
-	v, err := json.MarshalIndent(c, "", "    ")
+func (s *SDEType) ToJSON() (string, error) {
+	v, err := json.MarshalIndent(s, "", "    ")
 	return string(v), err
 }
