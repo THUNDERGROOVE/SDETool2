@@ -3,7 +3,6 @@
 	Static Data Export.  The package automatically can download and manage
 	multiple versions of the SDE.
 */
-
 package sde
 
 import (
