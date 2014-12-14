@@ -10,12 +10,14 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	_ "github.com/mattn/go-sqlite3"
+	_ "github.com/mattn/go-sqlite3" // Database driver
 	"os"
 	"strings"
 	"time"
 )
 
+// SDE is a struct containing the database object, the version of the SDE
+// and many methods for working with the SDE.
 type SDE struct {
 	DB      *sql.DB
 	Version string
@@ -23,7 +25,7 @@ type SDE struct {
 
 // Open will open our SDE of the version specified.
 func Open(Version string) (SDE, error) {
-	for k, _ := range Versions {
+	for k := range Versions {
 		if k == Version {
 			s := getsde(k)
 			return s, nil
@@ -45,7 +47,7 @@ func (s *SDE) GetType(id int) (SDEType, error) {
 		rows.Scan(&nTypeID, &nTypeName)
 		return SDEType{s, nTypeID, nTypeName, make(map[string]interface{})}, nil
 	}
-	return SDEType{}, errors.New("No such type")
+	return SDEType{}, errors.New("no such type")
 }
 
 // GetTypeWhereNameContains should be thought of as a search function that
@@ -93,7 +95,7 @@ func (s *SDE) Dump() error {
 				var tDone int
 				for _, v := range TypeIDs {
 					if v.D {
-						tDone += 1
+						tDone++
 					}
 				}
 				if tDone >= len(TypeIDs) {
@@ -111,7 +113,7 @@ func (s *SDE) Dump() error {
 
 	for _, v := range TypeIDs {
 		t, _ := s.GetType(v.I)
-		t.GetAtrributes()
+		t.GetAttributes()
 		if t.IsObtainable() {
 			name := t.GetName()
 			id := t.TypeID

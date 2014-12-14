@@ -17,7 +17,7 @@ type SDEType struct {
 
 // GetAttributes grabs the attributes for the type and applied them.  This is
 // used to speed up querries for simple lookups.
-func (s *SDEType) GetAtrributes() error {
+func (s *SDEType) GetAttributes() error {
 	if s.TypeName == "" {
 		rows, err := s.ParentSDE.DB.Query(fmt.Sprintf("SELECT typeName FROM CatmaTypes WHERE TypeID == '%v';", s.TypeID))
 		if err != nil {
@@ -60,14 +60,9 @@ func (s *SDEType) GetAtrributes() error {
 func (s *SDEType) GetName() string {
 	if name, ok := s.Attributes["mDisplayName"]; ok {
 		return name.(string)
-	} else {
-		s.GetAtrributes()
-		if s.Attributes["mDisplayName"] == nil { // Assume that there isn no display name for the type.
-			return s.TypeName
-		} else {
-			return s.Attributes["mDisplayName"].(string)
-		}
 	}
+
+	return s.TypeName
 }
 
 // GetRoF gets the ROF of any weapon in rounds per minute.  Must vall GetAttributes first
@@ -162,7 +157,7 @@ func (s *SDEType) GetSharedTagTypes() ([]*SDEType, error) {
 		for k, v := range s.Attributes {
 			if strings.Contains(k, "tag.") {
 				tag, _ := s.ParentSDE.GetType(v.(int))
-				tag.GetAtrributes()
+				tag.GetAttributes()
 				if strings.Contains(tag.TypeName, "tag_weapon_") { // if s is a scrambler rifle, return all scrambler rifles.
 					types, err := s.getFromTags(tag)
 					return types, err

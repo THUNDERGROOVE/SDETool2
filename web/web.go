@@ -48,7 +48,7 @@ func HandleGetType(res http.ResponseWriter, req *http.Request) {
 	if t, err := SDE.GetType(typeID); err != nil {
 		procErr(err, res)
 	} else {
-		t.GetAtrributes()
+		t.GetAttributes()
 		j, _ := t.ToJSON()
 		response = []byte(j)
 	}

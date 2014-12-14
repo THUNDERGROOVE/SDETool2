@@ -70,7 +70,7 @@ func main() {
 			return
 		}
 		t := types[0]
-		t.GetAtrributes()
+		t.GetAttributes()
 		fmt.Printf("%v\n", t.GetName())
 		if *args.DPS {
 			fmt.Printf("DPS: %v\n", t.GetDPS())
@@ -82,7 +82,7 @@ func main() {
 				return
 			}
 			for _, v := range tt {
-				v.GetAtrributes()
+				v.GetAttributes()
 				if !v.IsAurum() && v.IsWeapon() {
 					fmt.Printf("DPS: %v %v\n", v.GetDPS(), v.GetName())
 				}
