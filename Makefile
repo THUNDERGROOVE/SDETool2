@@ -1,0 +1,10 @@
+all:
+	go install github.com/THUNDERGROOVE/SDETool2/args
+	go install github.com/THUNDERGROOVE/SDETool2/sde
+	go install github.com/THUNDERGROOVE/SDETool2/web
+	go install github.com/THUNDERGROOVE/SDETool2/types
+	go build -v
+deps:
+	go get github.com/mattn/go-sqlite3
+	go get github.com/gorilla/mux
+	go get github.com/gorilla/handlers
