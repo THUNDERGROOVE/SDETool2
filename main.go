@@ -2,7 +2,6 @@
 	SDETool is a command line tool for searching information on items in the
 	DUST514 Static Data Export
 */
-
 package main
 
 import (
