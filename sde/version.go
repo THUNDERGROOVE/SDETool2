@@ -20,6 +20,8 @@ func init() {
 	Versions["1.9"] = sde19
 }
 
+// DownloadAllVersions is a function to download every version of the SDE
+// that is available.
 func DownloadAllVersions() {
 	for k := range Versions {
 		download(k)
