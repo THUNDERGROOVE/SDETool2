@@ -7,6 +7,8 @@ SDETool2 uses the Dust514 Static Data Export to poll for info.
 
 Building
 ========
+When SDETool2 becomes more useful I will provide precompiled binaries for Windows.
+
 You need [Go](http://golang.org) with your GOPATH environment variable setup with our dependencies
 
 On Windows you will need GCC which you can usually get from either [Cygwin](http://www.cygwin.com/) or [Mingw](http://www.mingw.org/)  I use Mingw so that's your best bet.  It must match the CPU architecture as what you're building for.
