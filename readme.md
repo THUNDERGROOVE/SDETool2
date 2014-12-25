@@ -75,7 +75,13 @@ My end goal is to be able to create a list of statistics and compare the entire 
 Server
 ======
 
-For now, the server has one endpoint.
+Searching:
+```
+/search/{search:(.*)}
+```
+Returns a list of SDETypes.  Until I can either add some caching or somehow improve the speed of getting massive lists of attributes this will take 1-5 seconds to load.
+
+Getting a Type:
 ```
 /type/{TypeID:[0-9]+}
 ```
