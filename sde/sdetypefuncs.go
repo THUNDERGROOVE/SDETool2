@@ -8,6 +8,9 @@ import (
 )
 
 // SDEType holds hopefully all of the information you will need about a type.
+// The interface in the Attributes map will always be either a float64, int or
+// a string.  If the value is always going to a whole number pull an int out
+// otherwise assume it's a float
 type SDEType struct {
 	ParentSDE  *SDE                   `json:"parentSDE"`
 	TypeID     int                    `json:"typeId"`

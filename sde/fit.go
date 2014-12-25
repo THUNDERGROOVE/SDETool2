@@ -5,27 +5,33 @@ import (
 	"strconv"
 )
 
+// CLFMetadata holds the metadata portion of a CLF fit
 type CLFMetadata struct {
 	Title string `json:"title"`
 }
 
+// CLFPreset is an individual preset in a CLF fit
 type CLFPreset struct {
 	Name    string       `json:"presetname"`
 	Modules []*CLFModule `json:"modules"`
 }
 
+// CLFSuit houses the "ship" portion of a CLF fit
 type CLFSuit struct {
-	TypeID  string `json:"typeid"`
-	SDEType SDEType
+	TypeID  string  `json:"typeid"`
+	SDEType SDEType `json:"-"`
 }
 
+// CLF module holds an individual module in the fit
 type CLFModule struct {
-	SDEType  SDEType
-	TypeID   string `json:"typeid"`
-	SlotType string `json:"slottype"`
-	Index    int    `json:"index"`
+	SDEType  SDEType `json:"-"`
+	TypeID   string  `json:"typeid"`
+	SlotType string  `json:"slottype"`
+	Index    int     `json:"index"`
 }
 
+// SDEFit is a structure representing a CLF fit for DUST514 and internal
+// structures for calculating stats.
 type SDEFit struct {
 	CLFVersion     int         `json:"clf-version"`
 	CLFType        string      `json:"X-clf-type"`

@@ -12,6 +12,7 @@ const (
 	ProtofitsBaseURL = "http://www.protofits.com/fittings/getCLF/"
 )
 
+// GetFitClipboard gets a CLF fit from the clipboard.
 func GetFitClipboard() (*SDEFit, error) {
 	data, err := clipboard.ReadAll()
 	fit := &SDEFit{}
@@ -26,6 +27,8 @@ func GetFitClipboard() (*SDEFit, error) {
 	return fit, nil
 }
 
+// GetFitProtoFits gets a CLF fit from Protofits.com
+// You must provide the id of the fit and it must be shared
 func GetFitProtofits(id string) (*SDEFit, error) {
 	resp, err := http.Get(fmt.Sprintf("%v%v", ProtofitsBaseURL, id))
 	fit := &SDEFit{}
@@ -45,6 +48,7 @@ func GetFitProtofits(id string) (*SDEFit, error) {
 	return fit, nil
 }
 
+// GetFitFromFile loads a CLF fit from file.
 func GetFitFromFile(filename string) (*SDEFit, error) {
 	data, err := ioutil.ReadFile(filename)
 	fit := &SDEFit{}
