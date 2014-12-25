@@ -56,7 +56,20 @@ Arguments
 	Starts an http server that acts as a JSON endpoint to the SDE for more information see the server section
 	-port
 		Set the port.  Defaults to 80
+-pf
+    If given a string, it will pull a fit from Protofits.com.  Currently this doesn't work as viewing fits requires you to be logged in.
+-clip
+    If given a string, it will get a CLF fit from your clipboard.
 ```
+
+You may find more hidden gems in ``` SDETool2 -help ```
+
+Fits
+====
+I just recently implemented basic CLF fitting imports and added ```SDEType``` fields to the structures.  I plan on adding more methods to lookup information on fits.
+
+My end goal is to be able to create a list of statistics and compare the entire fit across multiple versions of DUST using previous versions of the SDE, including hotfixes in the event they are uploaded.
+
 Server
 ======
 
