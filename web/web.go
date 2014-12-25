@@ -2,7 +2,6 @@ package web
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"github.com/THUNDERGROOVE/SDETool2/args"
 	"github.com/THUNDERGROOVE/SDETool2/sde"
@@ -10,7 +9,6 @@ import (
 	"github.com/gorilla/mux"
 	"net/http"
 	"os"
-	"strconv"
 )
 
 var SDE sde.SDE
@@ -31,38 +29,11 @@ func StartServer() {
 
 	r := mux.NewRouter()
 	r.HandleFunc("/type/{typeID:[0-9]+}", HandleGetType)
+	r.HandleFunc("/search/{search:(.*)}", HandleSearch)
 	r.HandleFunc("/version", HandleVersion)
 	http.Handle("/", handlers.CombinedLoggingHandler(os.Stdout, r))
 	r.NotFoundHandler = http.HandlerFunc(FourOhFour)
 	http.ListenAndServe(fmt.Sprintf(":%v", *args.Port), nil)
-}
-
-func HandleGetType(res http.ResponseWriter, req *http.Request) {
-	response := make([]byte, 0)
-	v := mux.Vars(req)
-	vs := v["typeID"]
-	typeID, err := strconv.Atoi(vs)
-	if procErr(err, res) {
-		return
-	}
-	if t, err := SDE.GetType(typeID); err != nil {
-		procErr(err, res)
-	} else {
-		t.GetAttributes()
-		j, _ := t.ToJSON()
-		response = []byte(j)
-	}
-	res.Write(response)
-}
-func HandleVersion(res http.ResponseWriter, req *http.Request) {
-	res.Write([]byte(*args.Version))
-}
-
-func FourOhFour(res http.ResponseWriter, req *http.Request) {
-	err := errors.New("404: Not found")
-	m, _ := json.MarshalIndent(Error{err.Error()}, "", "    ")
-	res.WriteHeader(404)
-	res.Write(m)
 }
 
 func procErr(err error, res http.ResponseWriter) bool {

@@ -15,11 +15,21 @@ import (
 	"time"
 )
 
+var (
+	PrimarySDE *SDE
+)
+
+// GiveSDE is used to give the sde package your primary SDE that you've opened
+// We need this for fits to pull the data from the correct database.
+func GiveSDE(s *SDE) {
+	PrimarySDE = s
+}
+
 // SDE is a struct containing the database object, the version of the SDE
 // and many methods for working with the SDE.
 type SDE struct {
-	DB      *sql.DB
-	Version string
+	DB      *sql.DB `json:"-"`
+	Version string  `json:"version"`
 }
 
 // Open will open our SDE of the version specified.
@@ -51,8 +61,8 @@ func (s *SDE) GetType(id int) (SDEType, error) {
 
 // GetTypeWhereNameContains should be thought of as a search function that
 // checks the display name.
-func (s *SDE) GetTypeWhereNameContains(name string) ([]SDEType, error) {
-	values := make([]SDEType, 0)
+func (s *SDE) GetTypeWhereNameContains(name string) ([]*SDEType, error) {
+	values := make([]*SDEType, 0)
 	rows, err := s.DB.Query(fmt.Sprintf("SELECT TypeID FROM CatmaAttributes WHERE catmaValueText LIKE '%%%v%%' AND catmaAttributeName == 'mDisplayName'", name))
 	if err != nil {
 		return values, err
@@ -61,7 +71,7 @@ func (s *SDE) GetTypeWhereNameContains(name string) ([]SDEType, error) {
 		var nTypeID int
 
 		rows.Scan(&nTypeID)
-		value := SDEType{s, nTypeID, "", make(map[string]interface{})}
+		value := &SDEType{s, nTypeID, "", make(map[string]interface{})}
 		values = append(values, value)
 	}
 	return values, nil
@@ -73,6 +83,7 @@ type joint struct {
 }
 
 // Dump attemps to dump all relevent types to a file.
+// Uses lots of memory.  Be careful.
 func (s *SDE) Dump() error {
 	fmt.Println("Begining relevant type dump")
 	rows, err := s.DB.Query("SELECT TypeID FROM CatmaTypes;")

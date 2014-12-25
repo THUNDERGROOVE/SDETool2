@@ -7,6 +7,9 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"runtime/debug"
+	"strings"
+	"time"
 )
 
 // getsde checks that our version is downloaded and opens it.
@@ -19,6 +22,12 @@ func getsde(version string) SDE {
 	return SDE{
 		db,
 		version}
+}
+
+func Debug(t time.Time) {
+	duration := time.Since(t)
+	function := strings.Split(strings.Split(strings.Split(string(debug.Stack()), "\n")[3], ":")[0], "\t")[1]
+	fmt.Printf("DEBUG: Function %v took %v\n", function, duration.String())
 }
 
 // download attempts to download a version of the SDE provided

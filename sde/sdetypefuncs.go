@@ -9,9 +9,9 @@ import (
 
 // SDEType holds hopefully all of the information you will need about a type.
 type SDEType struct {
-	ParentSDE  *SDE                   `json:"-"`
-	TypeID     int                    `json:"typeid"`
-	TypeName   string                 `json:"typename"`
+	ParentSDE  *SDE                   `json:"parentSDE"`
+	TypeID     int                    `json:"typeId"`
+	TypeName   string                 `json:"typeName"`
 	Attributes map[string]interface{} `json:"attributes"`
 }
 

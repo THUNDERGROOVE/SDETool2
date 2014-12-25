@@ -17,6 +17,9 @@ var (
 	Server       *bool
 	Port         *int
 	Dump         *bool
+
+	ProtoFits *string
+	Clipboard *bool
 )
 
 func init() {
@@ -32,6 +35,9 @@ func init() {
 	Server = flag.Bool("http", false, "Run a web server to return types as JSON")
 	Port = flag.Int("port", 80, "Port used by the http server")
 	Dump = flag.Bool("dump", false, "Dump relevant typeids to file")
+
+	ProtoFits = flag.String("pf", "", "Gets a fit from protofits")
+	Clipboard = flag.Bool("clip", false, "Get a fit from your clipboard in CLF format")
 
 	flag.Parse()
 }

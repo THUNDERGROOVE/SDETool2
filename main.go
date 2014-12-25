@@ -54,6 +54,8 @@ func main() {
 	}
 	fmt.Printf("Opened DB with version %v\n", s.Version)
 
+	sde.GiveSDE(&s)
+
 	if *args.Dump {
 		err := s.Dump()
 		if err != nil {
@@ -95,5 +97,21 @@ func main() {
 			}
 			fmt.Println(v)
 		}
+	}
+	if *args.ProtoFits != "" {
+		fit, err := sde.GetFitProtofits(*args.ProtoFits)
+		if err != nil {
+			fmt.Printf("Error getting fit from ProtoFits.com: %v\n", err.Error())
+			return
+		}
+		fmt.Println(fit)
+	}
+	if *args.Clipboard {
+		fit, err := sde.GetFitClipboard()
+		if err != nil {
+			fmt.Printf("Error getting fit from clipboard %v\n", err.Error())
+			return
+		}
+		fmt.Println(fit)
 	}
 }

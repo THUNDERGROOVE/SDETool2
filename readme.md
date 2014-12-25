@@ -22,6 +22,17 @@ Then you should be able to
 make
 ```
 
+Dependencies
+============
+
+SDETool2 currently uses
+```
+go-sqlite3 by mattn
+mux and handlers from Gorilla
+clipboard by atotto
+```
+All of these can be found on Github
+
 Arguments
 =====
 ```
@@ -57,8 +68,11 @@ It will return some JSON that looks like
 
 ``` json
 {
-    "typeid": 364029,
-    "typename": "arm_scout_am_pro_ak0",
+    "parentSDE": {
+        "version": "1.9"
+    },
+    "typeId": 364029,
+    "typeName": "arm_scout_am_pro_ak0",
     "attributes": {
         "basePrice": 57690,
         "categoryID": 354390,
@@ -177,3 +191,5 @@ It will return some JSON that looks like
 }
 
 ```
+
+I plan to add more later probably for tags and such.
