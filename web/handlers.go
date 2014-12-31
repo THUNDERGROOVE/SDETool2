@@ -58,7 +58,7 @@ func HandleVersion(res http.ResponseWriter, req *http.Request) {
 	v := &struct {
 		Version string `json:"version"`
 	}{
-		Version: []byte(*args.Version),
+		Version: *args.Version,
 	}
 	data, _ := json.Marshal(v)
 	res.Write(data)
