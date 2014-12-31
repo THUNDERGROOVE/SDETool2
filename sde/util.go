@@ -7,6 +7,8 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"path/filepath"
+	"runtime"
 	"runtime/debug"
 	"strings"
 	"time"
@@ -14,6 +16,8 @@ import (
 
 // getsde checks that our version is downloaded and opens it.
 func getsde(version string) SDE {
+	defer Debug(time.Now())
+
 	download(version)
 	db, err := sql.Open("sqlite3", fmt.Sprintf("sde.%v.db", version))
 	if err != nil {
@@ -24,14 +28,24 @@ func getsde(version string) SDE {
 		version}
 }
 
+var (
+	PrintDebug bool
+)
+
 func Debug(t time.Time) {
-	duration := time.Since(t)
-	function := strings.Split(strings.Split(strings.Split(string(debug.Stack()), "\n")[3], ":")[0], "\t")[1]
-	fmt.Printf("DEBUG: Function %v took %v\n", function, duration.String())
+	if PrintDebug {
+		_, path, line, _ := runtime.Caller(1)
+		_, file := filepath.Split(path)
+		duration := time.Since(t)
+		function := strings.Split(strings.Split(strings.Split(string(debug.Stack()), "\n")[3], ":")[0], "\t")[1]
+		fmt.Printf("DEBUG: %v:%v:%v took %v\n", file, line, function, duration.String())
+	}
 }
 
 // download attempts to download a version of the SDE provided
 func download(version string) {
+	defer Debug(time.Now())
+
 	if _, err := os.Stat(fmt.Sprintf("sde.%v.db", version)); os.IsNotExist(err) {
 		fmt.Printf("SDE file not found.  Downloading %v", version)
 		res, err := http.Get(Versions[version])

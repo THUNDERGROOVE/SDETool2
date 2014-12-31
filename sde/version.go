@@ -1,5 +1,9 @@
 package sde
 
+import (
+	"time"
+)
+
 const (
 	sde17  = "http://cdn1.eveonline.com/community/DUST_SDE/Uprising_1.7_674383.zip"
 	sde18  = "http://cdn1.eveonline.com/community/DUST_SDE/Uprising_1.8_752135.zip" // Old: http://cdn1.eveonline.com/community/DUST_SDE/Uprising_1.8_739147.zip
@@ -23,6 +27,8 @@ func init() {
 // DownloadAllVersions is a function to download every version of the SDE
 // that is available.
 func DownloadAllVersions() {
+	defer Debug(time.Now())
+
 	for k := range Versions {
 		download(k)
 	}

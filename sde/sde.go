@@ -1,7 +1,8 @@
 /*
 	The sde package is a fully functional library for use with the DUST514
 	Static Data Export.  The package automatically can download and manage
-	multiple versions of the SDE.
+	multiple versions of the SDE and has multiple data structures to
+	manipulate data.
 */
 package sde
 
@@ -20,7 +21,9 @@ var (
 )
 
 // GiveSDE is used to give the sde package your primary SDE that you've opened
-// We need this for fits to pull the data from the correct database.
+// We need this for fits to pull the data from the correct database.  If you're
+// not using fits don't bother.  All of the fit provider functions should warn
+// if it's not set.
 func GiveSDE(s *SDE) {
 	PrimarySDE = s
 }
@@ -45,6 +48,8 @@ func Open(Version string) (SDE, error) {
 
 // GetType returns an SDEType of the given TypeID
 func (s *SDE) GetType(id int) (SDEType, error) {
+	defer Debug(time.Now())
+
 	rows, err := s.DB.Query(fmt.Sprintf("SELECT * FROM CatmaTypes WHERE TypeID == '%v'", id))
 	if err != nil {
 		return SDEType{}, err
@@ -62,6 +67,8 @@ func (s *SDE) GetType(id int) (SDEType, error) {
 // GetTypeWhereNameContains should be thought of as a search function that
 // checks the display name.
 func (s *SDE) GetTypeWhereNameContains(name string) ([]*SDEType, error) {
+	defer Debug(time.Now())
+
 	values := make([]*SDEType, 0)
 	rows, err := s.DB.Query(fmt.Sprintf("SELECT TypeID FROM CatmaAttributes WHERE catmaValueText LIKE '%%%v%%' AND catmaAttributeName == 'mDisplayName'", name))
 	if err != nil {
@@ -85,6 +92,8 @@ type joint struct {
 // Dump attemps to dump all relevent types to a file.
 // Uses lots of memory.  Be careful.
 func (s *SDE) Dump() error {
+	defer Debug(time.Now())
+
 	fmt.Println("Begining relevant type dump")
 	rows, err := s.DB.Query("SELECT TypeID FROM CatmaTypes;")
 	if err != nil {

@@ -3,6 +3,7 @@ package sde
 import (
 	"fmt"
 	"strconv"
+	"time"
 )
 
 // CLFMetadata holds the metadata portion of a CLF fit
@@ -44,6 +45,8 @@ type SDEFit struct {
 // fillFields is an internal function used to fill all the extra non-json
 // within the SDEFit structure and sub structures.
 func (s *SDEFit) fillFields() {
+	defer Debug(time.Now())
+
 	if PrimarySDE == nil {
 		fmt.Printf("Error filling SDEFit fields the PrimarySDE is nil.  Set it with GiveSDE()\n")
 		return
@@ -54,6 +57,7 @@ func (s *SDEFit) fillFields() {
 	if err != nil {
 		fmt.Printf("Error filling SDEFit fields: %v\n", err.Error())
 	}
+
 	for _, v := range s.Fitting.Modules {
 		tid, _ := strconv.Atoi(v.TypeID)
 		var err1 error

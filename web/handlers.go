@@ -11,6 +11,7 @@ import (
 	"time"
 )
 
+// HandleSerach is used to handle /search/[search]
 func HandleSearch(res http.ResponseWriter, req *http.Request) {
 	defer sde.Debug(time.Now())
 	response := make([]byte, 0)
@@ -51,10 +52,19 @@ func HandleGetType(res http.ResponseWriter, req *http.Request) {
 	}
 	res.Write(response)
 }
+
+// HandleVersion is used to handle /version/
 func HandleVersion(res http.ResponseWriter, req *http.Request) {
-	res.Write([]byte(*args.Version))
+	v := &struct {
+		Version string `json:"version"`
+	}{
+		Version: []byte(*args.Version),
+	}
+	data, _ := json.Marshal(v)
+	res.Write(data)
 }
 
+// FourOhFour is a 404 handler.
 func FourOhFour(res http.ResponseWriter, req *http.Request) {
 	err := errors.New("404: Not found")
 	m, _ := json.MarshalIndent(Error{err.Error()}, "", "    ")

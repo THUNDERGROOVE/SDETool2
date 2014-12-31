@@ -6,6 +6,7 @@ import (
 	"github.com/atotto/clipboard"
 	"io/ioutil"
 	"net/http"
+	"time"
 )
 
 const (
@@ -14,6 +15,8 @@ const (
 
 // GetFitClipboard gets a CLF fit from the clipboard.
 func GetFitClipboard() (*SDEFit, error) {
+	defer Debug(time.Now())
+
 	data, err := clipboard.ReadAll()
 	fit := &SDEFit{}
 	if err != nil {
@@ -30,6 +33,8 @@ func GetFitClipboard() (*SDEFit, error) {
 // GetFitProtoFits gets a CLF fit from Protofits.com
 // You must provide the id of the fit and it must be shared
 func GetFitProtofits(id string) (*SDEFit, error) {
+	defer Debug(time.Now())
+
 	resp, err := http.Get(fmt.Sprintf("%v%v", ProtofitsBaseURL, id))
 	fit := &SDEFit{}
 	if err != nil {
@@ -50,6 +55,8 @@ func GetFitProtofits(id string) (*SDEFit, error) {
 
 // GetFitFromFile loads a CLF fit from file.
 func GetFitFromFile(filename string) (*SDEFit, error) {
+	defer Debug(time.Now())
+
 	data, err := ioutil.ReadFile(filename)
 	fit := &SDEFit{}
 	if err != nil {

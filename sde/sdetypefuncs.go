@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"time"
 )
 
 // SDEType holds hopefully all of the information you will need about a type.
@@ -21,6 +22,8 @@ type SDEType struct {
 // GetAttributes grabs the attributes for the type and applied them.  This is
 // used to speed up querries for simple lookups.
 func (s *SDEType) GetAttributes() error {
+	defer Debug(time.Now())
+
 	if s.TypeName == "" {
 		rows, err := s.ParentSDE.DB.Query(fmt.Sprintf("SELECT typeName FROM CatmaTypes WHERE TypeID == '%v';", s.TypeID))
 		if err != nil {
@@ -61,6 +64,8 @@ func (s *SDEType) GetAttributes() error {
 
 // GetName returns the display name of a type.
 func (s *SDEType) GetName() string {
+	defer Debug(time.Now())
+
 	if name, ok := s.Attributes["mDisplayName"]; ok {
 		return name.(string)
 	}
@@ -70,6 +75,8 @@ func (s *SDEType) GetName() string {
 
 // GetRoF gets the ROF of any weapon in rounds per minute.  Must vall GetAttributes first
 func (s *SDEType) GetRoF() int {
+	defer Debug(time.Now())
+
 	// if v, ok := s.Attributes["mFireMode0.m_eFireMode"]; ok {
 	// 	if v == "DWFM_SingleBurst" {
 	bi := s.Attributes["m_BurstInfo.m_fBurstInterval"].(float64)
@@ -88,6 +95,8 @@ func (s *SDEType) GetRoF() int {
 // Notice: CCP has some all kinds of fucked up shit with bursts and intervals
 // don't expect these numbers to be accurate until I can finally fix all of it.
 func (s *SDEType) GetDPS() float64 {
+	defer Debug(time.Now())
+
 	RoF := s.GetRoF()
 	var damage float64
 	if d, ok := s.Attributes["mFireMode0.instantHitDamage"]; ok {
@@ -102,6 +111,8 @@ func (s *SDEType) GetDPS() float64 {
 
 // IsWeapon returns true if a type has a weapon tag.
 func (s *SDEType) IsWeapon() bool {
+	defer Debug(time.Now())
+
 	for k, v := range s.Attributes {
 		if strings.Contains(k, "tag.") {
 			if v.(int) == 352335 {
@@ -115,6 +126,8 @@ func (s *SDEType) IsWeapon() bool {
 // IsAurum returns if the item is puchased with aurum.
 // Be the soldiar of tomorrow, today with Aurum(C)(TM)(LOLCCP)
 func (s *SDEType) IsAurum() bool {
+	defer Debug(time.Now())
+
 	if strings.Contains(s.TypeName, "aur") {
 		return true
 	}
@@ -126,6 +139,8 @@ func (s *SDEType) IsAurum() bool {
 // The name is misleading but it should be used to check if an item is
 // obtainable by a player.
 func (s *SDEType) IsObtainable() bool {
+	defer Debug(time.Now())
+
 	if _, ok := s.Attributes["consumable"]; ok {
 		return true
 	}
@@ -135,6 +150,8 @@ func (s *SDEType) IsObtainable() bool {
 // getFromTags is an internal method to return all types that share have a tag
 // of the type provided.
 func (s *SDEType) getFromTags(t SDEType) ([]*SDEType, error) {
+	defer Debug(time.Now())
+
 	types := make([]*SDEType, 0)
 	rows, err := s.ParentSDE.DB.Query(fmt.Sprintf("SELECT typeID FROM CatmaAttributes WHERE catmaValueInt == '%v';", t.TypeID))
 	if err != nil {
@@ -155,6 +172,8 @@ func (s *SDEType) getFromTags(t SDEType) ([]*SDEType, error) {
 // GetSharedTagTypes returns a slice of SDETypes that share the 'main' tag
 // of a type.
 func (s *SDEType) GetSharedTagTypes() ([]*SDEType, error) {
+	defer Debug(time.Now())
+
 	types := make([]*SDEType, 0)
 	if s.IsWeapon() {
 		for k, v := range s.Attributes {
@@ -197,6 +216,8 @@ func (s *SDEType) GetSharedTagTypes() ([]*SDEType, error) {
 
 // ToJSON returns a Marshaled and indented version of our SDEType.
 func (s *SDEType) ToJSON() (string, error) {
+	defer Debug(time.Now())
+
 	v, err := json.MarshalIndent(s, "", "    ")
 	return string(v), err
 }

@@ -22,6 +22,9 @@ func init() {
 }
 
 func main() {
+
+	sde.PrintDebug = *args.Debug
+
 	/* Set default version to 1.9, the latest if version isn't set. */
 	if *args.Version == "" {
 		*args.Version = "1.9"
