@@ -128,7 +128,7 @@ func (s *SDEType) IsWeapon() bool {
 func (s *SDEType) IsAurum() bool {
 	defer Debug(time.Now())
 
-	if strings.Contains(s.TypeName, "aur" || strings.Contains(s.TypeName, "promo") {
+	if strings.Contains(s.TypeName, "aur") || strings.Contains(s.TypeName, "promo") {
 		return true
 	}
 
