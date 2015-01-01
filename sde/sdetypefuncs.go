@@ -128,7 +128,7 @@ func (s *SDEType) IsWeapon() bool {
 func (s *SDEType) IsAurum() bool {
 	defer Debug(time.Now())
 
-	if strings.Contains(s.TypeName, "aur") {
+	if strings.Contains(s.TypeName, "aur" || strings.Contains(s.TypeName, "promo") {
 		return true
 	}
 
@@ -220,4 +220,22 @@ func (s *SDEType) ToJSON() (string, error) {
 
 	v, err := json.MarshalIndent(s, "", "    ")
 	return string(v), err
+}
+
+// PrintTags is a function to pretty print tags related to a type.
+func (s *SDEType) PrintTags() {
+	for k, v := range s.Attributes {
+		if strings.Contains(k, "tag.") {
+			tag, _ := s.ParentSDE.GetType(v.(int))
+			tag.GetAttributes()
+			fmt.Println("-> Type has tag:", tag.GetName())
+		}
+	}
+}
+
+func (s *SDEType) IsFaction() bool {
+	if strings.Contains(s.GetName(), "Imperial") || strings.Contains(s.GetName(), "State") || strings.Contains(s.GetName(), "Federation") || strings.Contains(s.GetName(), "Republic") {
+		return true
+	}
+	return false
 }

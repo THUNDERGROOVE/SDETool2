@@ -3,6 +3,8 @@ all:
 	go install github.com/THUNDERGROOVE/SDETool2/sde
 	go install github.com/THUNDERGROOVE/SDETool2/web
 	go install github.com/THUNDERGROOVE/SDETool2/types
+	go install github.com/THUNDERGROOVE/SDETool2/market
+	go install github.com/THUNDERGROOVE/SDETool2/log
 	go build -v
 deps:
 	go get github.com/mattn/go-sqlite3

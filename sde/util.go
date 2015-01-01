@@ -4,6 +4,7 @@ import (
 	"archive/zip"
 	"database/sql"
 	"fmt"
+	"github.com/THUNDERGROOVE/SDETool2/log"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -38,7 +39,7 @@ func Debug(t time.Time) {
 		_, file := filepath.Split(path)
 		duration := time.Since(t)
 		function := strings.Split(strings.Split(strings.Split(string(debug.Stack()), "\n")[3], ":")[0], "\t")[1]
-		fmt.Printf("DEBUG: %v:%v:%v took %v\n", file, line, function, duration.String())
+		log.Trace(fmt.Sprintf("%v:%v:%v took %v", file, line, function, duration.String()))
 	}
 }
 

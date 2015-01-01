@@ -6,6 +6,8 @@ package main
 
 import (
 	"fmt"
+	"github.com/THUNDERGROOVE/SDETool2/log"
+	"github.com/THUNDERGROOVE/SDETool2/market"
 	"github.com/THUNDERGROOVE/SDETool2/web"
 	"os"
 
@@ -24,6 +26,7 @@ func init() {
 func main() {
 
 	sde.PrintDebug = *args.Debug
+	log.DebugLog = *args.Debug
 
 	/* Set default version to 1.9, the latest if version isn't set. */
 	if *args.Version == "" {
@@ -76,29 +79,17 @@ func main() {
 		}
 		t := types[0]
 		t.GetAttributes()
-		fmt.Printf("%v\n", t.GetName())
-		if *args.DPS {
-			fmt.Printf("DPS: %v\n", t.GetDPS())
-		}
-		if *args.Compare {
-			tt, err := t.GetSharedTagTypes()
-			if err != nil {
-				fmt.Printf("Error while getting shared tag types %v\n", err.Error())
-				return
+		HandleType(t)
+	}
+
+	if *args.MultiType != "" {
+		types, _ := s.GetTypeWhereNameContains(*args.MultiType)
+		for _, v := range types {
+			v.GetAttributes()
+			if v.IsAurum() || v.IsFaction() {
+				continue
 			}
-			for _, v := range tt {
-				v.GetAttributes()
-				if !v.IsAurum() && v.IsWeapon() {
-					fmt.Printf("DPS: %v %v\n", v.GetDPS(), v.GetName())
-				}
-			}
-		}
-		if *args.ToJSON {
-			v, err := t.ToJSON()
-			if err != nil {
-				fmt.Printf("Error marshaling JSON data %v\n", err.Error())
-			}
-			fmt.Println(v)
+			HandleType(v)
 		}
 	}
 	if *args.ProtoFits != "" {
@@ -116,5 +107,39 @@ func main() {
 			return
 		}
 		fmt.Println(fit)
+	}
+}
+
+func HandleType(t *sde.SDEType) {
+	fmt.Printf("%v\n", t.GetName())
+	if *args.DPS {
+		fmt.Printf("DPS: %v\n", t.GetDPS())
+	}
+	if *args.Tags {
+		t.PrintTags()
+	}
+	if *args.Compare {
+		tt, err := t.GetSharedTagTypes()
+		if err != nil {
+			fmt.Printf("Error while getting shared tag types %v\n", err.Error())
+			return
+		}
+		for _, v := range tt {
+			v.GetAttributes()
+			if !v.IsAurum() && v.IsWeapon() {
+				fmt.Printf("DPS: %v %v\n", v.GetDPS(), v.GetName())
+			}
+		}
+	}
+	if *args.ToJSON {
+		v, err := t.ToJSON()
+		if err != nil {
+			fmt.Printf("Error marshaling JSON data %v\n", err.Error())
+		}
+		fmt.Println(v)
+	}
+	if *args.Market {
+		d := market.GetUnitsSold(t)
+		fmt.Println("-> Total sold in the last 6 months", d)
 	}
 }
