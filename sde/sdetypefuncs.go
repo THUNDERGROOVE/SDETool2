@@ -125,6 +125,8 @@ func (s *SDEType) IsWeapon() bool {
 
 // IsAurum returns if the item is puchased with aurum.
 // Be the soldiar of tomorrow, today with Aurum(C)(TM)(LOLCCP)
+// Will also return true if it's a pack item or special edition.
+// The only special edition suits that aren't filtered are unique.
 func (s *SDEType) IsAurum() bool {
 	defer Debug(time.Now())
 
