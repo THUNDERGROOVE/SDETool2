@@ -5,11 +5,13 @@ package market
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/THUNDERGROOVE/SDETool2/log"
 	"github.com/THUNDERGROOVE/SDETool2/sde"
 	"io/ioutil"
 	"net/http"
+	"reflect"
 	"time"
 )
 
@@ -33,9 +35,19 @@ type MarketDataEntry struct {
 }
 
 func GetMarketData(s *sde.SDEType) map[string]MarketData {
-	TypeID := s.TypeID
 	defer sde.Debug(time.Now())
 	out := make(map[string]MarketData)
+	TypeID := s.TypeID
+
+	if CheckCache(TypeID) {
+		c, err := GetCache(TypeID)
+		if err != nil {
+			log.LogError("Error getting cache", err.Error())
+			return out
+		}
+		return c.Data
+	}
+
 	for _, v := range Regions.Regions {
 		log.Trace("Getting data for", s.GetName(), "in region", v.Name)
 		r, err := http.Get(fmt.Sprintf("%v%v/types/%v/history/", BaseURL, v.TypeID, TypeID))
@@ -56,17 +68,31 @@ func GetMarketData(s *sde.SDEType) map[string]MarketData {
 		}
 		out[v.Name] = Data
 	}
+	if CacheData(TypeID, out) != nil {
+		log.LogError("Error creating cache for type", s.GetName())
+	}
 	return out
 }
 
-func GetUnitsSold(s *sde.SDEType) int {
+func GetUnitsSold(i interface{}) (int, error) {
 	defer sde.Debug(time.Now())
+
+	var data map[string]MarketData
 	var out int
-	data := GetMarketData(s)
+
+	switch reflect.TypeOf(i) {
+	case reflect.TypeOf(&sde.SDEType{}):
+		data = GetMarketData(i.(*sde.SDEType))
+
+	case reflect.TypeOf(make(map[string]MarketData, 0)):
+		data = i.(map[string]MarketData)
+	default:
+		return 0, errors.New("GetUnitsSold was given a type that was not an SDEType or map[string]MarketData")
+	}
 	for _, v := range data {
 		for _, vv := range v.Items {
 			out += int(vv.Volume)
 		}
 	}
-	return out
+	return out, nil
 }

@@ -64,8 +64,6 @@ func (s *SDEType) GetAttributes() error {
 
 // GetName returns the display name of a type.
 func (s *SDEType) GetName() string {
-	defer Debug(time.Now())
-
 	if name, ok := s.Attributes["mDisplayName"]; ok {
 		return name.(string)
 	}

@@ -9,6 +9,7 @@ var (
 	VersionCompare *string
 	TypeName       *string
 	MultiType      *string
+	Plot           *bool
 
 	DPS          *bool
 	Tags         *bool
@@ -31,6 +32,7 @@ func init() {
 	VersionCompare = flag.String("vc", "", "The SDE version used for comparisons.  Currently does nothing")
 	TypeName = flag.String("t", "", "A type name to look up")
 	MultiType = flag.String("mt", "", "Multiple Types to lookup one after another.")
+	Plot = flag.Bool("p", false, "Draw a plot of data. Notice: Only some operations are supported.")
 
 	DPS = flag.Bool("dps", false, "Print dps of a weapon")
 	Tags = flag.Bool("tag", false, "Print tags with the type")

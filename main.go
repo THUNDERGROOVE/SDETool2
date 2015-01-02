@@ -8,11 +8,16 @@ import (
 	"fmt"
 	"github.com/THUNDERGROOVE/SDETool2/log"
 	"github.com/THUNDERGROOVE/SDETool2/market"
+	"github.com/THUNDERGROOVE/SDETool2/market/graph"
 	"github.com/THUNDERGROOVE/SDETool2/web"
 	"os"
 
 	"github.com/THUNDERGROOVE/SDETool2/args"
 	"github.com/THUNDERGROOVE/SDETool2/sde"
+)
+
+var (
+	MarketData map[string]map[string]market.MarketData
 )
 
 func init() {
@@ -21,6 +26,7 @@ func init() {
 	if err := os.Chdir(os.Getenv("HOME") + "/.SDETool/"); err != nil {
 		fmt.Println(err.Error())
 	}
+	MarketData = make(map[string]map[string]market.MarketData, 0)
 }
 
 func main() {
@@ -91,6 +97,9 @@ func main() {
 			}
 			HandleType(v)
 		}
+		if *args.Plot {
+			graph.BarSuitData(MarketData)
+		}
 	}
 	if *args.ProtoFits != "" {
 		fit, err := sde.GetFitProtofits(*args.ProtoFits)
@@ -139,7 +148,12 @@ func HandleType(t *sde.SDEType) {
 		fmt.Println(v)
 	}
 	if *args.Market {
-		d := market.GetUnitsSold(t)
+		d, _ := market.GetUnitsSold(t)
 		fmt.Println("-> Total sold in the last 6 months", d)
+		// Do if we have multiple items to work with
+		if *args.MultiType != "" {
+			MarketData[t.GetName()] = market.GetMarketData(t)
+		}
 	}
+
 }
