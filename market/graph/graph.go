@@ -8,6 +8,7 @@ import (
 	"github.com/THUNDERGROOVE/SDETool2/log"
 	"github.com/THUNDERGROOVE/SDETool2/market"
 	"github.com/lucasb-eyer/go-colorful"
+	"math"
 	"math/rand"
 	"sort"
 	"time"
@@ -29,17 +30,31 @@ func init() {
 	MarketCache = Cache{make(map[string]map[int]*Data, 0)}
 }
 
+func save(p *plot.Plot, count int, isBar bool) {
+	baseW := float64(8)
+	baseH := float64(4.5)
+	log.Info("Saving graph with options count", count, "isBar", isBar, "using size ", saveScale(baseW, count), saveScale(baseH, count))
+
+	if err := p.Save(saveScale(baseW, count), saveScale(baseH, count), "graph.png"); err != nil {
+		log.LogError("Error saving graph as png.")
+	}
+}
+
+func saveScale(f float64, c int) float64 {
+	return math.Sqrt(f*float64(c)) * float64(2)
+}
+
 func doCache(data map[string]map[string]market.MarketData) {
 	for name, set := range data {
 		for _, v := range set {
 			for _, vv := range v.Items {
-				d, err := time.Parse("2006-1-2T03:04:05", vv.Date)
+				d, err := time.Parse("2006-01-02T03:04:05", vv.Date)
 				if err != nil {
 					fmt.Println("Error parsing date from market data", err.Error())
 					continue
 				}
-				if time.Now().Sub(d).Hours() >= 8040 { // Ignore data set.  8040 is how many hours are in 11 months
-					log.Info("Ignoring old data set.", time.Now().Sub(d).Hours(), "hours old.")
+				if time.Now().Sub(d).Hours() >= 4380 { // Ignore data set.  4380 is half of a year
+					//log.Info("Ignoring old data set.", time.Now().Sub(d).Hours(), "hours old.", d.String())
 					continue
 				}
 				if MarketCache.Data == nil {
@@ -106,9 +121,7 @@ func PlotSuitData(data map[string]map[string]market.MarketData) { //ew lol
 		p.Legend.Add(name, line)
 		ci++
 	}
-	if err := p.Save(16, 9, "graph.png"); err != nil {
-		log.LogError("Error saving graph as png.")
-	}
+	save(p, len(MarketCache.Data), false)
 }
 
 func BarSuitData(data map[string]map[string]market.MarketData) { //ew lol
@@ -139,8 +152,7 @@ func BarSuitData(data map[string]map[string]market.MarketData) { //ew lol
 
 		ci++
 	}
+	p.Legend.Top = true
 	p.NominalX("January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December")
-	if err := p.Save(16, 9, "graph.png"); err != nil {
-		log.LogError("Error saving graph as png.")
-	}
+	save(p, len(MarketCache.Data), true)
 }

@@ -1,0 +1,17 @@
+author: THUNDERGROOVE
+description: >
+        Like SDETool but better
+
+filesets:
+    includes:
+        - README.md
+        - LICENSE
+    excludes:
+        - \.git
+    depth: 3
+settings:
+        targetdir: ""
+        build: |
+            make deps
+        outfiles:
+            - SDETool2
