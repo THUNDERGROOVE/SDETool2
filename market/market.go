@@ -1,20 +1,20 @@
-/*
-	market is a package to lookup market information for DUST514
-*/
+// Package market is a package to lookup market information for DUST514
 package market
 
 import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/THUNDERGROOVE/SDETool2/log"
-	"github.com/THUNDERGROOVE/SDETool2/sde"
 	"io/ioutil"
 	"net/http"
 	"reflect"
 	"time"
+
+	"github.com/THUNDERGROOVE/SDETool2/log"
+	"github.com/THUNDERGROOVE/SDETool2/sde"
 )
 
+// BaseURL is the base url for market data
 const BaseURL = "http://public-crest.eveonline.com/market/"
 
 // MarketData is a set to group a slice of MarketDataEntry
@@ -34,6 +34,7 @@ type MarketDataEntry struct {
 	//VolumeString     string `json:"volume_str"`
 }
 
+// GetMarketData returns a set of MarketData for a type.
 func GetMarketData(s *sde.SDEType) map[string]MarketData {
 	defer sde.Debug(time.Now())
 	out := make(map[string]MarketData)

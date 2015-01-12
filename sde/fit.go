@@ -23,7 +23,7 @@ type CLFSuit struct {
 	SDEType SDEType `json:"-"`
 }
 
-// CLF module holds an individual module in the fit
+// CLFModule holds an individual module in the fit
 type CLFModule struct {
 	SDEType  SDEType `json:"-"`
 	TypeID   string  `json:"typeid"`
@@ -31,9 +31,9 @@ type CLFModule struct {
 	Index    int     `json:"index"`
 }
 
-// SDEFit is a structure representing a CLF fit for DUST514 and internal
+// Fit is a structure representing a CLF fit for DUST514 and internal
 // structures for calculating stats.
-type SDEFit struct {
+type Fit struct {
 	CLFVersion     int         `json:"clf-version"`
 	CLFType        string      `json:"X-clf-type"`
 	CLFGeneratedBy string      `json:"X-generatedby"`
@@ -42,13 +42,24 @@ type SDEFit struct {
 	Fitting        CLFPreset   `json:"presets"`
 }
 
+// Stats is a general structure to output all of the stats of a fit.
+// Curretly need to add the rest of the fields.
+type Stats struct {
+	DamagePerSecond float64
+	Armor           int
+	Shields         int
+	EHP             int
+	CPULeft         int
+	PGLeft          int
+}
+
 // fillFields is an internal function used to fill all the extra non-json
 // within the SDEFit structure and sub structures.
-func (s *SDEFit) fillFields() {
+func (s *Fit) fillFields() {
 	defer Debug(time.Now())
 
 	if PrimarySDE == nil {
-		fmt.Printf("Error filling SDEFit fields the PrimarySDE is nil.  Set it with GiveSDE()\n")
+		fmt.Printf("Error filling SDEFit fields the PrimarySDE is nil.	Set it with GiveSDE()\n")
 		return
 	}
 	typeid, _ := strconv.Atoi(s.Suit.TypeID)
@@ -66,4 +77,11 @@ func (s *SDEFit) fillFields() {
 			fmt.Printf("Error filling SDEFit fields: %v\n", err.Error())
 		}
 	}
+}
+
+// Stats returns a Stats for a fit.
+func (s *Fit) Stats() Stats {
+	ss := Stats{}
+	ss.Armor = 10
+	return ss
 }

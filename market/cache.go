@@ -3,22 +3,26 @@ package market
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/THUNDERGROOVE/SDETool2/log"
 	"io/ioutil"
 	"os"
 	"time"
+
+	"github.com/THUNDERGROOVE/SDETool2/log"
 )
 
 const (
+	// TimeFormat is used internally for market cache
 	TimeFormat = "01-02 2006 03:04PM"
 )
 
+// Cache is our struct for each cache file
 type Cache struct {
 	Data   map[string]MarketData `json:"data"`
 	Time   string                `json:"time"`
 	TypeID int                   `json:"typeid"`
 }
 
+// CacheData stores our market cache
 func CacheData(t int, m map[string]MarketData) error {
 	c := Cache{}
 	c.Data = m
@@ -36,6 +40,7 @@ func CacheData(t int, m map[string]MarketData) error {
 	return nil
 }
 
+// CheckCache checks to see if we have valid cache for the type.
 func CheckCache(t int) bool {
 	checkCache()
 	if _, err := os.Stat(fmt.Sprintf("cache/%v.json", t)); err == nil {
@@ -50,12 +55,14 @@ func CheckCache(t int) bool {
 		// }
 		log.Info("Cache file found.", fmt.Sprintf("cache/%v.json", t), "Using it")
 		return true
-	} else {
-		log.Info("No cache file found.")
 	}
+
+	log.Info("No cache file found.")
+
 	return false
 }
 
+// GetCache returns a cache for a typeid
 func GetCache(t int) (Cache, error) {
 	out := Cache{}
 	data, err := ioutil.ReadFile(fmt.Sprintf("cache/%v.json", t))

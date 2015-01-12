@@ -3,10 +3,11 @@ package sde
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/atotto/clipboard"
 	"io/ioutil"
 	"net/http"
 	"time"
+
+	"github.com/atotto/clipboard"
 )
 
 const (
@@ -14,11 +15,11 @@ const (
 )
 
 // GetFitClipboard gets a CLF fit from the clipboard.
-func GetFitClipboard() (*SDEFit, error) {
+func GetFitClipboard() (*Fit, error) {
 	defer Debug(time.Now())
 
 	data, err := clipboard.ReadAll()
-	fit := &SDEFit{}
+	fit := &Fit{}
 	if err != nil {
 		return fit, err
 	}
@@ -32,11 +33,11 @@ func GetFitClipboard() (*SDEFit, error) {
 
 // GetFitProtoFits gets a CLF fit from Protofits.com
 // You must provide the id of the fit and it must be shared
-func GetFitProtofits(id string) (*SDEFit, error) {
+func GetFitProtofits(id string) (*Fit, error) {
 	defer Debug(time.Now())
 
 	resp, err := http.Get(fmt.Sprintf("%v%v", ProtofitsBaseURL, id))
-	fit := &SDEFit{}
+	fit := &Fit{}
 	if err != nil {
 		return fit, err
 	}
@@ -54,11 +55,11 @@ func GetFitProtofits(id string) (*SDEFit, error) {
 }
 
 // GetFitFromFile loads a CLF fit from file.
-func GetFitFromFile(filename string) (*SDEFit, error) {
+func GetFitFromFile(filename string) (*Fit, error) {
 	defer Debug(time.Now())
 
 	data, err := ioutil.ReadFile(filename)
-	fit := &SDEFit{}
+	fit := &Fit{}
 	if err != nil {
 		return fit, err
 	}
