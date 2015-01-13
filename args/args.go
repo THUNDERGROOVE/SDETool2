@@ -5,24 +5,34 @@ import (
 )
 
 var (
+	// Versioning
 	Version        *string
 	VersionCompare *string
-	TypeName       *string
-	MultiType      *string
-	Plot           *bool
+	ListVersions   *bool
+	DownloadAll    *bool
 
-	DPS          *bool
-	Tags         *bool
-	ListVersions *bool
-	DownloadAll  *bool
-	Compare      *bool
-	ToJSON       *bool
-	Server       *bool
-	Port         *int
-	Dump         *bool
-	Debug        *bool
-	Market       *bool
+	// Selectors
+	TypeName  *string
+	MultiType *string
+	Compare   *bool
 
+	// DataPrinting
+	DPS        *bool
+	Tags       *bool
+	ToJSON     *bool
+	Market     *bool
+	Attributes *bool
+
+	// Misc
+	Plot   *bool
+	Server *bool
+	Port   *int
+
+	// Debug stuff
+	Dump  *bool
+	Debug *bool
+
+	// Fit Providers
 	ProtoFits *string
 	Clipboard *bool
 )
@@ -30,9 +40,12 @@ var (
 func init() {
 	Version = flag.String("v", "", "The SDE version to use.")
 	VersionCompare = flag.String("vc", "", "The SDE version used for comparisons.  Currently does nothing")
+
 	TypeName = flag.String("t", "", "A type name to look up")
 	MultiType = flag.String("mt", "", "Multiple Types to lookup one after another.")
 	Plot = flag.Bool("p", false, "Draw a plot of data. Notice: Only some operations are supported.")
+
+	Attributes = flag.Bool("a", false, "Prints all attributes tied to an SDEType")
 
 	DPS = flag.Bool("dps", false, "Print dps of a weapon")
 	Tags = flag.Bool("tag", false, "Print tags with the type")

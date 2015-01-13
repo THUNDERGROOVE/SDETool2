@@ -115,7 +115,7 @@ func main() {
 			fmt.Printf("Error getting fit from clipboard %v\n", err.Error())
 			return
 		}
-		fmt.Println(fit)
+		fmt.Println(fit.Stats().ToJSON())
 	}
 }
 
@@ -123,6 +123,12 @@ func HandleType(t *sde.SDEType) {
 	fmt.Printf("%v\n", t.GetName())
 	if *args.DPS {
 		fmt.Printf("DPS: %v\n", t.GetDPS())
+	}
+	if *args.Attributes {
+		fmt.Println("Attributes:")
+		for k, v := range t.Attributes {
+			fmt.Printf("\t[%v] => %v\n", k, v)
+		}
 	}
 	if *args.Tags {
 		t.PrintTags()
