@@ -1,7 +1,7 @@
 SDETool2
 =======
 
-[![GoDoc](https://godoc.org/github.com/THUNDERGROOVE/SDETool2?status.png)](https://godoc.org/github.com/THUNDERGROOVE/SDETool2)
+[![GoDoc](https://godoc.org/github.com/THUNDERGROOVE/SDETool2?status.png)](https://godoc.org/github.com/THUNDERGROOVE/SDETool2/sde)
 
 SDETool2 uses the Dust514 Static Data Export to poll for info.
 
