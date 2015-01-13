@@ -75,6 +75,17 @@ My end goal is to be able to create a list of statistics and compare the entire 
 Server
 ======
 
+Fits:
+```
+/fit/
+```
+Send JSON formated CLF fit via POST request and it'll respond with a marshaled Stats struct.
+
+Example:
+```
+curl -X POST -d '{"clf-version":1,"X-clf-type":"Dust","X-generatedby":"protofits.com","metadata":{"title":"Pubs"},"ship":{"typeid":"364029"},"presets":{"presetname":"Scout ak.0","modules":[{"typeid":"356563","slottype":"high","index":0},{"typeid":"351907","slottype":"high","index":1},{"typeid":"356707","slottype":"low","index":0},{"typeid":"356707","slottype":"low","index":1},{"typeid":"351670","slottype":"low","index":2},{"typeid":"351675","slottype":"low","index":3},{"typeid":"365442","slottype":"light","index":0},{"typeid":"353199","slottype":"sidearm","index":0},{"typeid":"355594","slottype":"grenade","index":0},{"typeid":"366532","slottype":"equip","index":0},{"typeid":"355269","slottype":"equip","index":1}]}}'
+```
+
 Searching:
 ```
 /search/{search:(.*)}
