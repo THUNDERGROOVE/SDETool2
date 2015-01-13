@@ -64,6 +64,19 @@ func HandleVersion(res http.ResponseWriter, req *http.Request) {
 	res.Write(data)
 }
 
+//HandleFit accepts a fit via POST
+func HandleFit(res http.ResponseWriter, req *http.Request) {
+	d := json.NewDecoder(req.Body)
+	var f sde.Fit
+	err := d.Decode(&f)
+	if procErr(err, res) {
+		return
+	}
+	f.FillFields()
+	s := f.Stats()
+	res.Write([]byte(s.ToJSON()))
+}
+
 // FourOhFour is a 404 handler.
 func FourOhFour(res http.ResponseWriter, req *http.Request) {
 	err := errors.New("404: Not found")

@@ -79,9 +79,9 @@ type Stats struct {
 	MetaLevel           int64   `sde:"metaLevel"                                    json:"metaLevel"`
 }
 
-// fillFields is an internal function used to fill all the extra non-json
+// FillFields is an internal function used to fill all the extra non-json
 // within the SDEFit structure and sub structures.
-func (s *Fit) fillFields() {
+func (s *Fit) FillFields() {
 	defer Debug(time.Now())
 
 	if PrimarySDE == nil {
