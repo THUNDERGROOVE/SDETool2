@@ -61,7 +61,8 @@ type Fit struct {
 }
 
 // Stats is a general structure to output all of the stats of a fit.
-// Curretly need to add the rest of the fields.
+// Fields values are automatically inserted via ApplySuitBonuses.
+// This structure is ready to be exported via JSON.
 type Stats struct {
 	HealArmorRate       int64   `sde:"mVICProp.healArmorRate"                       json:"repairRate"`
 	Shields             int64   `sde:"mVICProp.maxShield"                           json:"shield"`
@@ -203,6 +204,7 @@ func (f *Fit) ApplySuitBonus(stats *Stats, skill SkillLevel) {
 	}
 }
 
+// ToJSON returns an indented marshaled JSON string of our Stats object.
 func (s *Stats) ToJSON() string {
 	data, err := json.MarshalIndent(s, "", "  ")
 	if err != nil {
@@ -241,6 +243,7 @@ func (f *Fit) applySkill(val float64, typ, stack, name string, level SkillLevel)
 
 // Private helpers
 
+// getAttribute is a helper to get an attribute from an SDEType.
 func getAttribute(s SDEType, a string) (interface{}, error) {
 	if v, ok := s.Attributes[a]; ok {
 		return v, nil
@@ -250,6 +253,8 @@ func getAttribute(s SDEType, a string) (interface{}, error) {
 	return nil, errors.New("attribute not found" + a)
 }
 
+// attAssert is a helper to get a value from SDEType and insert it into
+// out Stats using reflection.  It's ugly... No really don't look...
 func attAssert(s *SDEType, index int, stats *Stats, value string) {
 	t := reflect.TypeOf(Stats{})
 	ss := reflect.ValueOf(stats).Elem()
