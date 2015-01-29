@@ -68,6 +68,25 @@ func (s *SDE) GetType(id int) (SDEType, error) {
 	return SDEType{}, errors.New("no such type")
 }
 
+func (s *SDE) GetTypeByName(name string) (SDEType, error) {
+	defer Debug(time.Now())
+
+	rows, err := s.DB.Query(fmt.Sprintf("SELECT * FROM CatmaTypes WHERE TypeName == '%v'", name))
+	if err != nil {
+		return SDEType{}, err
+	}
+	if rows.Next() {
+		var nTypeID int
+		var nTypeName string
+
+		rows.Scan(&nTypeID, &nTypeName)
+		t := SDEType{s, nTypeID, nTypeName, make(map[string]interface{})}
+		t.GetAttributes()
+		return t, nil
+	}
+	return SDEType{}, errors.New("no such type")
+}
+
 // GetTypeWhereNameContains should be thought of as a search function that
 // checks the display name.
 func (s *SDE) GetTypeWhereNameContains(name string) ([]*SDEType, error) {
