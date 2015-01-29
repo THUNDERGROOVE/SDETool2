@@ -47,6 +47,7 @@ func HandleGetType(res http.ResponseWriter, req *http.Request) {
 		procErr(err, res)
 	} else {
 		t.GetAttributes()
+		t.Lookup(2)
 		j, _ := t.ToJSON()
 		response = []byte(j)
 	}

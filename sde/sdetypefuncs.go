@@ -3,6 +3,7 @@ package sde
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/THUNDERGROOVE/SDETool2/log"
 	"strconv"
 	"strings"
 	"time"
@@ -13,10 +14,14 @@ import (
 // a string.  If the value is always going to a whole number pull an int out
 // otherwise assume it's a float
 type SDEType struct {
-	ParentSDE  *SDE                   `json:"parentSDE"`
+	parentSDE  *SDE                   `json:"parentSDE"`
 	TypeID     int                    `json:"typeId"`
 	TypeName   string                 `json:"typeName"`
 	Attributes map[string]interface{} `json:"attributes"`
+}
+
+func (s *SDEType) ParentSDE() *SDE {
+	return s.parentSDE
 }
 
 // GetAttributes grabs the attributes for the type and applied them.  This is
@@ -25,7 +30,7 @@ func (s *SDEType) GetAttributes() error {
 	defer Debug(time.Now())
 
 	if s.TypeName == "" {
-		rows, err := s.ParentSDE.DB.Query(fmt.Sprintf("SELECT typeName FROM CatmaTypes WHERE TypeID == '%v';", s.TypeID))
+		rows, err := s.parentSDE.DB.Query(fmt.Sprintf("SELECT typeName FROM CatmaTypes WHERE TypeID == '%v';", s.TypeID))
 		if err != nil {
 			return err
 		}
@@ -36,7 +41,7 @@ func (s *SDEType) GetAttributes() error {
 		}
 	}
 
-	rows, err := s.ParentSDE.DB.Query(fmt.Sprintf("SELECT catmaAttributeName, catmaValueInt, catmaValueReal, catmaValueText FROM CatmaAttributes WHERE TypeID == '%v'", s.TypeID))
+	rows, err := s.parentSDE.DB.Query(fmt.Sprintf("SELECT catmaAttributeName, catmaValueInt, catmaValueReal, catmaValueText FROM CatmaAttributes WHERE TypeID == '%v'", s.TypeID))
 	if err != nil {
 		return err
 	}
@@ -153,7 +158,7 @@ func (s *SDEType) getFromTags(t SDEType) ([]*SDEType, error) {
 	defer Debug(time.Now())
 
 	types := make([]*SDEType, 0)
-	rows, err := s.ParentSDE.DB.Query(fmt.Sprintf("SELECT typeID FROM CatmaAttributes WHERE catmaValueInt == '%v';", t.TypeID))
+	rows, err := s.parentSDE.DB.Query(fmt.Sprintf("SELECT typeID FROM CatmaAttributes WHERE catmaValueInt == '%v';", t.TypeID))
 	if err != nil {
 		return types, err
 	}
@@ -161,7 +166,7 @@ func (s *SDEType) getFromTags(t SDEType) ([]*SDEType, error) {
 		var nTypeID int
 		rows.Scan(&nTypeID)
 		types = append(types, &SDEType{
-			s.ParentSDE,
+			s.parentSDE,
 			nTypeID,
 			"",
 			make(map[string]interface{})})
@@ -178,7 +183,7 @@ func (s *SDEType) GetSharedTagTypes() ([]*SDEType, error) {
 	if s.IsWeapon() {
 		for k, v := range s.Attributes {
 			if strings.Contains(k, "tag.") {
-				tag, _ := s.ParentSDE.GetType(v.(int))
+				tag, _ := s.parentSDE.GetType(v.(int))
 				tag.GetAttributes()
 				if strings.Contains(tag.TypeName, "tag_weapon_") { // if s is a scrambler rifle, return all scrambler rifles.
 					types, err := s.getFromTags(tag)
@@ -226,7 +231,7 @@ func (s *SDEType) ToJSON() (string, error) {
 func (s *SDEType) PrintTags() {
 	for k, v := range s.Attributes {
 		if strings.Contains(k, "tag.") {
-			tag, _ := s.ParentSDE.GetType(v.(int))
+			tag, _ := s.parentSDE.GetType(v.(int))
 			tag.GetAttributes()
 			fmt.Println("-> Type has tag:", tag.GetName())
 		}
@@ -238,4 +243,51 @@ func (s *SDEType) IsFaction() bool {
 		return true
 	}
 	return false
+}
+
+// Lookup goes through our attributes in search of attributes that may
+// be a TypeID and change it's value to an *SDEType.
+func (s *SDEType) Lookup(depth int) {
+	log.Info("Lookup() depth", depth)
+	if depth <= 0 {
+		return
+	}
+	for key, v := range s.Attributes {
+		log.Info("Lookup checking", key)
+		if i, ok := v.(int); ok {
+			is := strconv.Itoa(i)
+			if len(is) == 6 { // Must be a TypeID right? lol
+				log.Info("Found TypeID candidate", i)
+				t, err := s.parentSDE.GetType(i)
+				if err != nil {
+					log.LogError(err.Error())
+					continue
+				}
+				t.GetAttributes()
+				t.Lookup(depth - 1)
+				s.Attributes[key] = &t
+			} else {
+				log.Info("Attribute had len of", len(is))
+			}
+		}
+	}
+}
+
+// Not documented for a reason. Don't ask.  Pretend this doesn't exist
+func (s *SDEType) ESBA() {
+	fmt.Println("ESBA")
+	SBM := 342
+
+	for i := 0; i < SBM; i++ {
+		if s.Attributes[fmt.Sprintf("mSalvageBoxLootTable.%v.itemTypeSet", i)] == nil || s.Attributes[fmt.Sprintf("mSalvageBoxLootTable.%v.lootFreq", i)] == nil || s.Attributes[fmt.Sprintf("mSalvageBoxLootTable.%v.minQuantity", i)] == nil || s.Attributes[fmt.Sprintf("mSalvageBoxLootTable.%v.maxQuantity", i)] == nil {
+			continue
+		}
+		id := s.Attributes[fmt.Sprintf("mSalvageBoxLootTable.%v.itemTypeSet", i)].(int)
+		f := s.Attributes[fmt.Sprintf("mSalvageBoxLootTable.%v.lootFreq", i)].(int)
+		mi := s.Attributes[fmt.Sprintf("mSalvageBoxLootTable.%v.minQuantity", i)].(int)
+		ma := s.Attributes[fmt.Sprintf("mSalvageBoxLootTable.%v.maxQuantity", i)].(int)
+		t, _ := s.parentSDE.GetType(id)
+		t.GetAttributes()
+		fmt.Printf("%v with frequency %v at least %v but no more than %v\n", t.GetName(), f, mi, ma)
+	}
 }

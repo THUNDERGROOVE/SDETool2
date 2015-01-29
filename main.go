@@ -68,6 +68,15 @@ func main() {
 
 	sde.GiveSDE(&s)
 
+	//log.Info("Attempting to read cache file")
+	//sde.LoadCache(fmt.Sprintf("%v.sde", *args.Version))
+	//defer sde.SaveCache(fmt.Sprintf("%v.sde", *args.Version))
+
+	if *args.DoCache {
+		s.GobDump()
+		return
+	}
+
 	if *args.Dump {
 		err := s.Dump()
 		if err != nil {
@@ -76,20 +85,50 @@ func main() {
 		}
 	}
 
+	if *args.ClassSearch != "" {
+		d, class := s.GetTypesByClassName(*args.ClassSearch)
+		fmt.Println("Class found: ", class)
+		for _, v := range d {
+			//v.GetAttributes()
+			fmt.Println(v.GetName())
+		}
+	}
+
 	/* Begin type parsing  */
 	if *args.TypeName != "" {
-		types, _ := s.GetTypeWhereNameContains(*args.TypeName)
-		if len(types) < 1 {
-			fmt.Printf("No types returned\n")
+		types, err := s.Search(*args.TypeName)
+		log.Info("Found", len(types), "types")
+		if err != nil {
+			fmt.Println("Error: ", err.Error())
+		}
+		if len(types) == 0 {
+			fmt.Println("No such type")
 			return
 		}
 		t := types[0]
 		t.GetAttributes()
+
+		if t.TypeID == 367765 || t.TypeName == "container_meta1" {
+			t.ESBA()
+		}
+
 		HandleType(t)
 	}
 
+	if *args.TID != 0 {
+		t, _ := s.GetType(*args.TID)
+
+		t.GetAttributes()
+		t.Lookup(2)
+
+		HandleType(&t)
+	}
+
 	if *args.MultiType != "" {
-		types, _ := s.GetTypeWhereNameContains(*args.MultiType)
+		types, err := s.Search(*args.MultiType)
+		if err != nil {
+			log.LogError("Error:", err.Error())
+		}
 		for _, v := range types {
 			v.GetAttributes()
 			if v.IsAurum() || v.IsFaction() {
@@ -120,7 +159,14 @@ func main() {
 }
 
 func HandleType(t *sde.SDEType) {
-	fmt.Printf("%v\n", t.GetName())
+	if t.TypeID == 367765 {
+		t.ESBA()
+	}
+	n := t.GetName()
+	if n == "" {
+		n = t.TypeName
+	}
+	fmt.Printf("Name: '%v' | %v\n", n, t.TypeID)
 	if *args.DPS {
 		fmt.Printf("DPS: %v\n", t.GetDPS())
 	}
