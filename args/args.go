@@ -5,6 +5,7 @@ import (
 )
 
 var (
+	// Versioning
 	Version        *string
 	VersionCompare *string
 	TypeName       *string
@@ -25,18 +26,18 @@ var (
 	Debug        *bool
 	Market       *bool
 	DoCache      *bool
-
-	ProtoFits *string
-	Clipboard *bool
 )
 
 func init() {
 	Version = flag.String("v", "", "The SDE version to use.")
 	VersionCompare = flag.String("vc", "", "The SDE version used for comparisons.  Currently does nothing")
+
 	TypeName = flag.String("t", "", "A type name to look up")
 	MultiType = flag.String("mt", "", "Multiple Types to lookup one after another.")
 	TID = flag.Int("id", 0, "A type to lookup by ID")
 	Plot = flag.Bool("p", false, "Draw a plot of data. Notice: Only some operations are supported.")
+
+	Attributes = flag.Bool("a", false, "Prints all attributes tied to an SDEType")
 
 	DPS = flag.Bool("dps", false, "Print dps of a weapon")
 	Tags = flag.Bool("tag", false, "Print tags with the type")

@@ -27,7 +27,7 @@ func GetFitClipboard() (*Fit, error) {
 	if merr != nil {
 		return fit, merr
 	}
-	fit.fillFields()
+	fit.FillFields()
 	return fit, nil
 }
 
@@ -50,7 +50,7 @@ func GetFitProtofits(id string) (*Fit, error) {
 	if merr != nil {
 		return fit, merr
 	}
-	fit.fillFields()
+	fit.FillFields()
 	return fit, nil
 }
 
@@ -67,6 +67,6 @@ func GetFitFromFile(filename string) (*Fit, error) {
 	if merr != nil {
 		return fit, merr
 	}
-	fit.fillFields()
+	fit.FillFields()
 	return fit, nil
 }
