@@ -11,6 +11,7 @@ import (
 	"github.com/THUNDERGROOVE/SDETool2/sde"
 	"github.com/THUNDERGROOVE/SDETool2/web"
 	"os"
+	"time"
 )
 
 func init() {
@@ -21,6 +22,7 @@ func init() {
 }
 
 func main() {
+	defer sde.Debug(time.Now())
 	SDE, err := sde.Open(*args.Version)
 
 	sde.PrimarySDE = &SDE

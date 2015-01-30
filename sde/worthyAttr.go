@@ -3,6 +3,7 @@ package sde
 import (
 	"fmt"
 	"github.com/THUNDERGROOVE/SDETool2/log"
+	"reflect"
 	"strings"
 )
 
@@ -12,6 +13,7 @@ type AtterSet struct {
 	SetName       string
 	AttributeName string
 	DoRangeFilter bool
+	ValueFunc     func(t SDEType, val interface{}) interface{}
 }
 
 func init() {
@@ -21,7 +23,22 @@ func init() {
 	WorthyAttributes["mCharProp.meleeDamage"] = AtterSet{SetName: "Biotics", AttributeName: "melee damage"}
 	WorthyAttributes["mCharProp.maxStamina"] = AtterSet{SetName: "Biotics", AttributeName: "stamina"}
 	WorthyAttributes["mCharProp.staminaRecoveryPerSecond"] = AtterSet{SetName: "Biotics", AttributeName: "stamina recovery"}
-	WorthyAttributes["mVICProp.groundSpeed"] = AtterSet{SetName: "Biotics", AttributeName: "speed"}
+	WorthyAttributes["mVICProp.groundSpeed"] = AtterSet{SetName: "Biotics", AttributeName: "speed", DoRangeFilter: true}
+	WorthyAttributes["mCharProp.movementSprint.groundSpeedScale"] = AtterSet{SetName: "Biotics", AttributeName: "sprint speed", DoRangeFilter: true,
+		ValueFunc: func(t SDEType, val interface{}) interface{} {
+			if v, ok := t.Attributes["mVICProp.groundSpeed"]; ok {
+				if speed, kk := val.(float64); kk {
+					if scale, kkk := v.(float64); kkk {
+						log.Info("Speed:", speed, "scale:", scale)
+						return interface{}(float64(speed * scale))
+					}
+				}
+			} else {
+				log.LogError("Type assertion error. speed:", reflect.TypeOf(v), "val:", reflect.TypeOf(val))
+			}
+
+			return interface{}(float64(-1))
+		}}
 
 	// Regen
 	WorthyAttributes["mVICProp.healArmorRate"] = AtterSet{SetName: "Regeneration", AttributeName: "armor repair rate"}
@@ -56,7 +73,18 @@ func PrintWorthyStats(t SDEType) {
 			if _, kk := p[v.SetName]; !kk {
 				p[v.SetName] = make([]string, 0)
 			}
-			p[v.SetName] = append(p[v.SetName], fmt.Sprintf("%v: %v", v.AttributeName, val))
+			if v.DoRangeFilter && v.ValueFunc == nil {
+				log.Info("value", v.AttributeName, "has range filter but no value func")
+				p[v.SetName] = append(p[v.SetName], fmt.Sprintf("%v: %v", v.AttributeName, DoRangeFilter(val)))
+			} else if v.ValueFunc != nil && v.DoRangeFilter == false {
+				log.Info("value", v.AttributeName, "has value func but no range filter")
+				p[v.SetName] = append(p[v.SetName], fmt.Sprintf("%v: %v", v.AttributeName, v.ValueFunc(t, val)))
+			} else if v.DoRangeFilter && v.ValueFunc != nil {
+				log.Info("value", v.AttributeName, "has range filter and a value func")
+				p[v.SetName] = append(p[v.SetName], fmt.Sprintf("%v: %v", v.AttributeName, DoRangeFilter(v.ValueFunc(t, val))))
+			} else {
+				p[v.SetName] = append(p[v.SetName], fmt.Sprintf("%v: %v", v.AttributeName, val))
+			}
 		}
 	}
 	// Check modifiers.
@@ -70,7 +98,11 @@ func PrintWorthyStats(t SDEType) {
 						log.Info("Holy tits found a match")
 						val := t.Attributes[fmt.Sprintf("modifier.%v.modifierValue", index)]
 						mod := t.Attributes[fmt.Sprintf("modifier.%v.modifierType", index)]
-						p[vv.SetName] = append(p[vv.SetName], fmt.Sprintf("modifies: %v by %v using %v", vv.AttributeName, val, mod))
+						if vv.DoRangeFilter {
+							p[vv.SetName] = append(p[vv.SetName], fmt.Sprintf("modifies: %v by %v using %v", vv.AttributeName, DoRangeFilter(val), mod))
+						} else {
+							p[vv.SetName] = append(p[vv.SetName], fmt.Sprintf("modifies: %v by %v using %v", vv.AttributeName, val, mod))
+						}
 					}
 				} else {
 					log.LogError("Attribute name wasn't a stirng? o:")
@@ -85,4 +117,14 @@ func PrintWorthyStats(t SDEType) {
 			fmt.Println("  ", vv)
 		}
 	}
+}
+
+func DoRangeFilter(i interface{}) float64 {
+	if v, ok := i.(float64); ok {
+		return float64(v / 100)
+	}
+
+	log.Info("Do range filter had no int in interface :/ got", reflect.TypeOf(i))
+
+	return float64(0)
 }
