@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/THUNDERGROOVE/SDETool2/args"
+	"github.com/THUNDERGROOVE/SDETool2/log"
 	"github.com/THUNDERGROOVE/SDETool2/sde"
 	"github.com/gorilla/mux"
 	"net/http"
@@ -41,13 +42,16 @@ func HandleGetType(res http.ResponseWriter, req *http.Request) {
 	vs := v["typeID"]
 	typeID, err := strconv.Atoi(vs)
 	if procErr(err, res) {
+		log.LogError("Error encountered while handling a response", err.Error())
 		return
 	}
 	if t, err := SDE.GetType(typeID); err != nil {
 		procErr(err, res)
 	} else {
-		t.GetAttributes()
-		t.Lookup(2)
+		if _, ok := t.Attributes["mDisplayName"]; !ok {
+			t.GetAttributes()
+		}
+		//t.Lookup(2)
 		j, _ := t.ToJSON()
 		response = []byte(j)
 	}

@@ -29,7 +29,14 @@ func (s *SDECache) GetType(id int) (SDEType, bool) {
 
 func (s *SDECache) Search(name string) []SDEType {
 	values := make([]SDEType, 0)
+	if s == nil {
+		log.LogError("SDECache not initialized.")
+		return values
+	}
 	for _, v := range s.Types {
+		if v == nil {
+			continue
+		}
 		if strings.Contains(v.GetName(), name) {
 			values = append(values, *v)
 			continue
@@ -52,6 +59,7 @@ func init() {
 }
 
 func SaveCache(filename string) error {
+	defer Debug(time.Now())
 	f, err := os.OpenFile(filename, os.O_RDWR|os.O_CREATE, 0777)
 	if err != nil {
 		return err
@@ -67,6 +75,7 @@ func SaveCache(filename string) error {
 }
 
 func LoadCache(filename string) error {
+	defer Debug(time.Now())
 	f, err := os.OpenFile(filename, os.O_RDWR, 0777)
 	if err != nil {
 		return err

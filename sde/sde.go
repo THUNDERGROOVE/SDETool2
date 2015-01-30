@@ -35,6 +35,7 @@ func GiveSDE(s *SDE) {
 type SDE struct {
 	DB      *sql.DB `json:"-"`
 	Version string  `json:"version"`
+	Cache   bool    `json:"useCache"`
 }
 
 // Open will open our SDE of the version specified.
@@ -51,6 +52,15 @@ func Open(Version string) (SDE, error) {
 // GetType returns an SDEType of the given TypeID
 func (s *SDE) GetType(id int) (SDEType, error) {
 	defer Debug(time.Now())
+	if s.Cache {
+		t, d := Cache.GetType(id)
+		if !d {
+			t.FromCache = true
+			return t, errors.New("No such type.")
+		}
+		log.Info("Used cache")
+		return t, nil
+	}
 
 	rows, err := s.DB.Query(fmt.Sprintf("SELECT * FROM CatmaTypes WHERE TypeID == '%v'", id))
 	if err != nil {
@@ -61,8 +71,8 @@ func (s *SDE) GetType(id int) (SDEType, error) {
 		var nTypeName string
 
 		rows.Scan(&nTypeID, &nTypeName)
-		t := SDEType{s, nTypeID, nTypeName, make(map[string]interface{})}
-		t.GetAttributes()
+		t := SDEType{s, nTypeID, nTypeName, make(map[string]interface{}), false, false}
+		//t.GetAttributes()
 		return t, nil
 	}
 	return SDEType{}, errors.New("no such type")
@@ -70,6 +80,14 @@ func (s *SDE) GetType(id int) (SDEType, error) {
 
 func (s *SDE) GetTypeByName(name string) (SDEType, error) {
 	defer Debug(time.Now())
+	if s.Cache {
+		vals := Cache.Search(name)
+		if len(vals) != 0 {
+			vals[0].FromCache = true
+			return vals[0], nil
+		}
+		return SDEType{}, errors.New("No such type.")
+	}
 
 	rows, err := s.DB.Query(fmt.Sprintf("SELECT * FROM CatmaTypes WHERE TypeName == '%v'", name))
 	if err != nil {
@@ -80,7 +98,7 @@ func (s *SDE) GetTypeByName(name string) (SDEType, error) {
 		var nTypeName string
 
 		rows.Scan(&nTypeID, &nTypeName)
-		t := SDEType{s, nTypeID, nTypeName, make(map[string]interface{})}
+		t := SDEType{s, nTypeID, nTypeName, make(map[string]interface{}), false, false}
 		t.GetAttributes()
 		return t, nil
 	}
@@ -91,6 +109,15 @@ func (s *SDE) GetTypeByName(name string) (SDEType, error) {
 // checks the display name.
 func (s *SDE) GetTypeWhereNameContains(name string) ([]*SDEType, error) {
 	defer Debug(time.Now())
+	if s.Cache {
+		vals := Cache.Search(name)
+		t := make([]*SDEType, 0)
+		for _, v := range vals {
+			v.FromCache = true
+			t = append(t, &v)
+		}
+		return t, nil
+	}
 
 	values := make([]*SDEType, 0)
 	rows, err := s.DB.Query(fmt.Sprintf("SELECT TypeID FROM CatmaAttributes WHERE catmaValueText LIKE '%%%v%%' AND catmaAttributeName == 'mDisplayName'", name))
@@ -101,7 +128,7 @@ func (s *SDE) GetTypeWhereNameContains(name string) ([]*SDEType, error) {
 		var nTypeID int
 
 		rows.Scan(&nTypeID)
-		value := &SDEType{s, nTypeID, "", make(map[string]interface{})}
+		value := &SDEType{s, nTypeID, "", make(map[string]interface{}), false, false}
 		values = append(values, value)
 	}
 	return values, nil
@@ -141,7 +168,7 @@ func (s *SDE) Search(search string) ([]*SDEType, error) {
 		if err != nil {
 			log.LogError("Scan error", err.Error())
 		}
-		values = append(values, &SDEType{s, nTypeID, nTypeName, make(map[string]interface{})})
+		values = append(values, &SDEType{s, nTypeID, nTypeName, make(map[string]interface{}), false, false})
 	}
 
 	if len(values) != 0 {

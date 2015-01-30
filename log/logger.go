@@ -11,7 +11,9 @@ import (
 
 var (
 	Log          *log.Logger
-	DebugLog     bool
+	TraceLog     bool
+	InfoLog      bool
+	ErrLog       bool
 	Color        bool
 	TerminalMode bool
 )
@@ -50,7 +52,7 @@ func init() {
 		panic("error opening log file")
 	}
 	Color = true
-	DebugLog = false
+	TraceLog = true
 	Log = log.New(f, "", log.Ltime)
 	TerminalMode = true
 	Info("Log started!")
@@ -61,7 +63,7 @@ func init() {
 // output as long as -nocolor is not supplied.
 func LogError(i ...interface{}) {
 	s := TypeString(i)
-	if DebugLog {
+	if ErrLog {
 		if Color {
 			term.Red(os.Stdout, fmt.Sprintf("\r%v Error: %v\n", callstr(), s))
 		} else {
@@ -81,7 +83,7 @@ func LogError(i ...interface{}) {
 // also will have nice coloredoutput as long as -nocolor is not supplied.
 func Info(i ...interface{}) {
 	s := TypeString(i)
-	if DebugLog {
+	if InfoLog {
 		if Color {
 			term.Cyan(os.Stdout, fmt.Sprintf("\r%v Info: %v\n", callstr(), s))
 
@@ -108,7 +110,7 @@ func Info(i ...interface{}) {
 //   file and any method that uses util.TimeFunction on a defer.
 func Trace(i ...interface{}) {
 	s := TypeString(i)
-	if DebugLog {
+	if TraceLog {
 		if Color {
 			term.Green(os.Stdout, "\rTrace: "+s+"\n")
 		} else {

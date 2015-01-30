@@ -9,6 +9,7 @@ import (
 	"github.com/THUNDERGROOVE/SDETool2/args"
 	"github.com/THUNDERGROOVE/SDETool2/log"
 	"github.com/THUNDERGROOVE/SDETool2/sde"
+	"github.com/THUNDERGROOVE/SDETool2/web"
 	"os"
 )
 
@@ -22,12 +23,29 @@ func init() {
 func main() {
 	SDE, err := sde.Open(*args.Version)
 
+	sde.PrimarySDE = &SDE
+
 	if err != nil {
 		log.LogError(err.Error())
 		return
 	}
 
 	var t *sde.SDEType
+
+	if *args.UseCache {
+		log.Info("Warning, Cache should only be used for long running setups like the server flags.")
+		log.Info("loading cache")
+		err := sde.LoadCache(fmt.Sprintf("%v.sde", *args.Version))
+		if err != nil {
+			log.LogError(err.Error())
+		}
+		defer sde.SaveCache(fmt.Sprintf("%v.sde", *args.Version))
+		SDE.Cache = true
+	}
+
+	if *args.Server {
+		web.StartServer()
+	}
 
 	if *args.TypeID != -1 {
 		log.Info("Using TypeID as selector")

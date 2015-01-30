@@ -26,7 +26,8 @@ func getsde(version string) SDE {
 	}
 	return SDE{
 		db,
-		version}
+		version,
+		false}
 }
 
 var (
@@ -34,13 +35,11 @@ var (
 )
 
 func Debug(t time.Time) {
-	if PrintDebug {
-		_, path, line, _ := runtime.Caller(1)
-		_, file := filepath.Split(path)
-		duration := time.Since(t)
-		function := strings.Split(strings.Split(strings.Split(string(debug.Stack()), "\n")[3], ":")[0], "\t")[1]
-		log.Trace(fmt.Sprintf("%v:%v:%v took %v", file, line, function, duration.String()))
-	}
+	_, path, line, _ := runtime.Caller(1)
+	_, file := filepath.Split(path)
+	duration := time.Since(t)
+	function := strings.Split(strings.Split(strings.Split(string(debug.Stack()), "\n")[3], ":")[0], "\t")[1]
+	log.Trace(fmt.Sprintf("%v:%v:%v took %v", file, line, function, duration.String()))
 }
 
 // download attempts to download a version of the SDE provided

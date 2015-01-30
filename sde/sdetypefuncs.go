@@ -2,6 +2,7 @@ package sde
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/THUNDERGROOVE/SDETool2/log"
 	"strconv"
@@ -18,6 +19,8 @@ type SDEType struct {
 	TypeID     int                    `json:"typeId"`
 	TypeName   string                 `json:"typeName"`
 	Attributes map[string]interface{} `json:"attributes"`
+	FromCache  bool                   `json:"fromCache"`
+	hasAttrs   bool                   `json:"hasAttrs"`
 }
 
 func (s *SDEType) ParentSDE() *SDE {
@@ -27,6 +30,12 @@ func (s *SDEType) ParentSDE() *SDE {
 // GetAttributes grabs the attributes for the type and applied them.  This is
 // used to speed up querries for simple lookups.
 func (s *SDEType) GetAttributes() error {
+	if s.FromCache {
+		return nil
+	}
+	if s.hasAttrs {
+		return nil
+	}
 	defer Debug(time.Now())
 
 	if s.TypeName == "" {
@@ -39,6 +48,15 @@ func (s *SDEType) GetAttributes() error {
 			rows.Scan(&nTypeName)
 			s.TypeName = nTypeName
 		}
+	}
+
+	if s.parentSDE == nil {
+		log.Info("Parent SDE not set, likely due to cache usage.  Setting from primary SDE")
+		if PrimarySDE == nil {
+			log.LogError("Primary SDE not set.  Returning error")
+			return errors.New("No parent SDE set")
+		}
+		s.parentSDE = PrimarySDE
 	}
 
 	rows, err := s.parentSDE.DB.Query(fmt.Sprintf("SELECT catmaAttributeName, catmaValueInt, catmaValueReal, catmaValueText FROM CatmaAttributes WHERE TypeID == '%v'", s.TypeID))
@@ -64,6 +82,7 @@ func (s *SDEType) GetAttributes() error {
 			s.Attributes[catmaAttributeName] = catmaValueText
 		}
 	}
+	s.hasAttrs = true
 	return nil
 }
 
@@ -169,7 +188,9 @@ func (s *SDEType) getFromTags(t SDEType) ([]*SDEType, error) {
 			s.parentSDE,
 			nTypeID,
 			"",
-			make(map[string]interface{})})
+			make(map[string]interface{}),
+			false,
+			false})
 	}
 	return types, nil
 }
