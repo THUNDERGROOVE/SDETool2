@@ -5,6 +5,7 @@ import (
 	"github.com/THUNDERGROOVE/SDETool2/log"
 	"reflect"
 	"strings"
+	"time"
 )
 
 var WorthyAttributes map[string]AtterSet
@@ -66,6 +67,7 @@ func init() {
 }
 
 func PrintWorthyStats(t SDEType) {
+	defer Debug(time.Now())
 	p := make(map[string][]string)
 	// Iterate attributes for matches
 	for k, v := range WorthyAttributes {
