@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/THUNDERGROOVE/SDETool2/log"
 	"reflect"
+	"sort"
 	"strings"
 	"time"
 )
@@ -128,10 +129,18 @@ func PrintWorthyStats(t SDEType) {
 		}
 	}
 
-	for k, v := range p {
-		fmt.Printf("=== %v ===\n", k)
-		for _, vv := range v {
-			fmt.Println("  ", vv)
+	keys := make([]string, 0)
+
+	for k, _ := range p {
+		keys = append(keys, k)
+	}
+
+	sort.Strings(keys)
+
+	for _, key := range keys {
+		fmt.Printf("=== %v ===\n", key)
+		for _, vv := range p[key] {
+			fmt.Printf("  %v\n", vv)
 		}
 	}
 }
