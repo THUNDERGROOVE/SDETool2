@@ -16,6 +16,7 @@ var (
 	TypeName        *string
 	TypeID          *int
 	TypeDisplayName *string
+	Search          *string
 
 	// Selector Modifiers.  Adjusts what's printed.
 	ToJSON     *bool
@@ -26,6 +27,7 @@ var (
 	Trace  *bool
 	Errors *bool
 	Info   *bool
+	Debug  *bool
 )
 
 func init() {
@@ -39,6 +41,7 @@ func init() {
 	TypeName = flag.String("tn", "", "A TypeName selector")
 	TypeID = flag.Int("tid", -1, "A TypeID selector")
 	TypeDisplayName = flag.String("td", "", "Searches mDisplayName")
+	Search = flag.String("search", "", "Searches")
 
 	// Selector modifiers
 	ToJSON = flag.Bool("json", false, "Prints type in json")
@@ -49,10 +52,16 @@ func init() {
 	Trace = flag.Bool("trace", false, "Print function timings")
 	Errors = flag.Bool("err", false, "Print errors")
 	Info = flag.Bool("info", false, "Print info")
+	Debug = flag.Bool("debug", false, "Prints all logging info")
 
 	flag.Parse()
 
 	log.TraceLog = *Trace
 	log.InfoLog = *Info
 	log.ErrLog = *Errors
+	if *Debug {
+		log.TraceLog = true
+		log.InfoLog = true
+		log.ErrLog = true
+	}
 }

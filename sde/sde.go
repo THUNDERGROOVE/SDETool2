@@ -51,6 +51,9 @@ func Open(Version string) (SDE, error) {
 
 // GetType returns an SDEType of the given TypeID
 func (s *SDE) GetType(id int) (SDEType, error) {
+	if id <= 0 {
+		return SDEType{}, errors.New("Given negative id")
+	}
 	defer Debug(time.Now())
 	if s.Cache {
 		t, d := Cache.GetType(id)
@@ -108,6 +111,7 @@ func (s *SDE) GetTypeByName(name string) (SDEType, error) {
 // GetTypeWhereNameContains should be thought of as a search function that
 // checks the display name.
 func (s *SDE) GetTypeWhereNameContains(name string) ([]*SDEType, error) {
+	log.Info(name)
 	defer Debug(time.Now())
 	if s.Cache {
 		vals := Cache.Search(name)

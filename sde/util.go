@@ -35,6 +35,14 @@ var (
 )
 
 func Debug(t time.Time) {
+	defer func() {
+		if r := recover(); r != nil {
+			_, path, line, _ := runtime.Caller(1)
+			_, file := filepath.Split(path)
+			duration := time.Since(t)
+			log.LogError("Debug() paniced.  Couldn't get function name", file, line, path, duration)
+		}
+	}()
 	_, path, line, _ := runtime.Caller(1)
 	_, file := filepath.Split(path)
 	duration := time.Since(t)

@@ -49,6 +49,18 @@ func main() {
 		web.StartServer()
 	}
 
+	if *args.Search != "" {
+		vals, err := SDE.Search(*args.Search)
+		if err != nil {
+			log.LogError(err.Error())
+			return
+		}
+		for _, v := range vals {
+			v.GetAttributes()
+			fmt.Printf("%v | %v | %v\n", v.GetName(), v.TypeName, v.TypeID)
+		}
+	}
+
 	if *args.TypeID != -1 {
 		log.Info("Using TypeID as selector")
 

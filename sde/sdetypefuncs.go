@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/THUNDERGROOVE/SDETool2/log"
+	"reflect"
 	"strconv"
 	"strings"
 	"time"
@@ -30,6 +31,18 @@ func (s *SDEType) ParentSDE() *SDE {
 // GetAttributes grabs the attributes for the type and applied them.  This is
 // used to speed up querries for simple lookups.
 func (s *SDEType) GetAttributes() error {
+	if s == nil {
+		log.LogError("SDEType is nil")
+		return errors.New("Type is nil")
+	}
+	if s.parentSDE == nil {
+		log.Info("Parent SDE not set, likely due to cache usage.  Setting from primary SDE")
+		if PrimarySDE == nil {
+			log.LogError("Primary SDE not set.  Returning error")
+			return errors.New("No parent SDE set")
+		}
+		s.parentSDE = PrimarySDE
+	}
 	if s.FromCache {
 		return nil
 	}
@@ -89,7 +102,10 @@ func (s *SDEType) GetAttributes() error {
 // GetName returns the display name of a type.
 func (s *SDEType) GetName() string {
 	if name, ok := s.Attributes["mDisplayName"]; ok {
-		return name.(string)
+		if v, kk := name.(string); kk {
+			return v
+		}
+		log.LogError("mDisplayName not string?", reflect.TypeOf(name), "typeID:", s.TypeID, "typeName:", s.TypeName)
 	}
 
 	return s.TypeName

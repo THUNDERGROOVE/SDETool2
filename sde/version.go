@@ -18,6 +18,7 @@ var (
 )
 
 func init() {
+	defer Debug(time.Now())
 	Versions = make(map[string]string, 0)
 	Versions["1.7"] = sde17
 	Versions["1.8"] = sde18

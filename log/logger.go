@@ -52,7 +52,7 @@ func init() {
 		panic("error opening log file")
 	}
 	Color = true
-	TraceLog = true
+	TraceLog = false
 	Log = log.New(f, "", log.Ltime)
 	TerminalMode = true
 	Info("Log started!")
@@ -65,7 +65,7 @@ func LogError(i ...interface{}) {
 	s := TypeString(i)
 	if ErrLog {
 		if Color {
-			term.Red(os.Stdout, fmt.Sprintf("\r%v Error: %v\n", callstr(), s))
+			term.Red(os.Stderr, fmt.Sprintf("\r%v Error: %v\n", callstr(), s))
 		} else {
 			fmt.Printf("\r%v Error: %v\n", callstr(), s)
 			if TerminalMode {
@@ -85,7 +85,7 @@ func Info(i ...interface{}) {
 	s := TypeString(i)
 	if InfoLog {
 		if Color {
-			term.Cyan(os.Stdout, fmt.Sprintf("\r%v Info: %v\n", callstr(), s))
+			term.Cyan(os.Stderr, fmt.Sprintf("\r%v Info: %v\n", callstr(), s))
 
 		} else {
 			fmt.Printf("\r%v Info: %v\n", callstr(), s)
@@ -112,7 +112,7 @@ func Trace(i ...interface{}) {
 	s := TypeString(i)
 	if TraceLog {
 		if Color {
-			term.Green(os.Stdout, "\rTrace: "+s+"\n")
+			term.Green(os.Stderr, "\rTrace: "+s+"\n")
 		} else {
 			fmt.Print("\rTrace: " + s)
 			if TerminalMode {

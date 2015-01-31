@@ -18,6 +18,7 @@ type AtterSet struct {
 }
 
 func init() {
+	defer Debug(time.Now())
 	WorthyAttributes = make(map[string]AtterSet, 0)
 
 	// Biotic stuff
@@ -38,6 +39,20 @@ func init() {
 				log.LogError("Type assertion error. speed:", reflect.TypeOf(v), "val:", reflect.TypeOf(val))
 			}
 
+			return interface{}(float64(-1))
+		}}
+	WorthyAttributes["mCharProp.movementRun.strafeSpeedScale"] = AtterSet{SetName: "Biotics", AttributeName: "strafe speed", DoRangeFilter: true,
+		ValueFunc: func(t SDEType, val interface{}) interface{} {
+			if v, ok := t.Attributes["mVICProp.groundSpeed"]; ok {
+				if speed, kk := val.(float64); kk {
+					if scale, kkk := v.(float64); kkk {
+						log.Info("Speed:", speed, "scale:", scale)
+						return interface{}(float64(speed * scale))
+					}
+				}
+			} else {
+				log.LogError("Type assertion error.  speed:", reflect.TypeOf(v), "val:", reflect.TypeOf(val))
+			}
 			return interface{}(float64(-1))
 		}}
 
