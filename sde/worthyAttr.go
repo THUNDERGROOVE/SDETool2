@@ -12,10 +12,11 @@ import (
 var WorthyAttributes map[string]AtterSet
 
 type AtterSet struct {
-	SetName       string
-	AttributeName string
-	DoRangeFilter bool
-	ValueFunc     func(t SDEType, val interface{}) interface{}
+	SetName          string
+	AttributeName    string
+	DoRangeFilter    bool
+	DoIntervalFilter bool
+	ValueFunc        func(t SDEType, val interface{}) interface{}
 }
 
 func init() {
@@ -78,6 +79,13 @@ func init() {
 	WorthyAttributes["mVICProp.signatureScanProfile"] = AtterSet{SetName: "EWAR", AttributeName: "scan profile"}
 	WorthyAttributes["mVICProp.signatureScanRadius"] = AtterSet{SetName: "EWAR", AttributeName: "scan radius", DoRangeFilter: true}
 
+	// Weapon
+	WorthyAttributes["mFireMode0.instantHitDamage"] = AtterSet{SetName: "Weapon", AttributeName: "damage"}
+	WorthyAttributes["mFireMode0.fireInterval"] = AtterSet{SetName: "Weapon", AttributeName: "rate of fire", DoIntervalFilter: true}
+	WorthyAttributes["mFireMode0.magazineSize"] = AtterSet{SetName: "Weapon", AttributeName: "magazine size"}
+	WorthyAttributes["mFireMode0.maxAmmoCount"] = AtterSet{SetName: "Weapon", AttributeName: "total ammo"}
+	WorthyAttributes["mFireMode0.reloadTime"] = AtterSet{SetName: "Weapon", AttributeName: "reload time"}
+
 	//Misc
 	WorthyAttributes["metaLevel"] = AtterSet{SetName: "Misc", AttributeName: "meta level"}
 }
@@ -91,18 +99,16 @@ func PrintWorthyStats(t SDEType) {
 			if _, kk := p[v.SetName]; !kk {
 				p[v.SetName] = make([]string, 0)
 			}
-			if v.DoRangeFilter && v.ValueFunc == nil {
-				log.Info("value", v.AttributeName, "has range filter but no value func")
-				p[v.SetName] = append(p[v.SetName], fmt.Sprintf("%v: %v", v.AttributeName, DoRangeFilter(val)))
-			} else if v.ValueFunc != nil && v.DoRangeFilter == false {
-				log.Info("value", v.AttributeName, "has value func but no range filter")
-				p[v.SetName] = append(p[v.SetName], fmt.Sprintf("%v: %v", v.AttributeName, v.ValueFunc(t, val)))
-			} else if v.DoRangeFilter && v.ValueFunc != nil {
-				log.Info("value", v.AttributeName, "has range filter and a value func")
-				p[v.SetName] = append(p[v.SetName], fmt.Sprintf("%v: %v", v.AttributeName, DoRangeFilter(v.ValueFunc(t, val))))
-			} else {
-				p[v.SetName] = append(p[v.SetName], fmt.Sprintf("%v: %v", v.AttributeName, val))
+			if v.ValueFunc != nil {
+				val = v.ValueFunc(t, val)
 			}
+			if v.DoRangeFilter {
+				val = DoRangeFilter(val)
+			}
+			if v.DoIntervalFilter {
+				val = IntervalFilter(val)
+			}
+			p[v.SetName] = append(p[v.SetName], fmt.Sprintf("%v: %v", v.AttributeName, val))
 		}
 	}
 	// Check modifiers.
@@ -150,7 +156,17 @@ func DoRangeFilter(i interface{}) float64 {
 		return float64(v / 100)
 	}
 
-	log.Info("Do range filter had no int in interface :/ got", reflect.TypeOf(i))
+	log.Info("Do range filter had no float in interface :/ got", reflect.TypeOf(i))
 
-	return float64(0)
+	return float64(-1)
+}
+
+func IntervalFilter(i interface{}) float64 {
+	if v, ok := i.(float64); ok {
+		return float64(v * 6000)
+	}
+
+	log.Info("Interval filter had no float in interface :/ got", reflect.TypeOf(i))
+
+	return float64(-1)
 }
