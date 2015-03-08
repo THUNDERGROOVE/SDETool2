@@ -1,6 +1,7 @@
 package sde
 
 import (
+	"encoding/gob"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -20,6 +21,16 @@ const (
 	LevelFour
 	LevelFive
 )
+
+func init() {
+	//gob.Register(SkillLevel{})
+	gob.Register(CLFMetadata{})
+	gob.Register(CLFPreset{})
+	gob.Register(CLFSuit{})
+	gob.Register(CLFModule{})
+	gob.Register(Fit{})
+	gob.Register(Stats{})
+}
 
 // SkillLevel is a type for each skill level available
 type SkillLevel uint8

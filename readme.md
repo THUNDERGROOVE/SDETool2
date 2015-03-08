@@ -13,6 +13,8 @@ You need [Go](http://golang.org) with your GOPATH environment variable setup wit
 
 On Windows you will need GCC which you can usually get from either [Cygwin](http://www.cygwin.com/) or [Mingw](http://www.mingw.org/)  I use Mingw so that's your best bet.  It must match the CPU architecture as what you're building for.
 
+For go get to do it's magic you will also need git and mercurial installed and in your path.
+
 In Linux you'll need build-essentials.  Installing it can depend on your distro however you should be able to figure this out if you need.
 ``` bash
 make deps

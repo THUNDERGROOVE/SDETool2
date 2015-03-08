@@ -99,6 +99,34 @@ func (s *SDEType) GetAttributes() error {
 	return nil
 }
 
+func (s *SDEType) GetAttribute(attributeName string) error {
+	rows, err := s.parentSDE.DB.Query(
+		fmt.Sprintf("SELECT catmaAttributeName, catmaValueInt, catmaValueReal, catmaValueText FROM CatmaAttributes WHERE TypeID == '%v' AND catmaAttributeName == '%v'", s.TypeID))
+	if err != nil {
+		return err
+	}
+	for rows.Next() {
+		var catmaAttributeName string
+		var catmaValueInt string
+		var catmaValueReal string
+		var catmaValueText string
+
+		rows.Scan(&catmaAttributeName, &catmaValueInt, &catmaValueReal, &catmaValueText)
+		if catmaValueInt != "None" {
+			v, _ := strconv.Atoi(catmaValueInt)
+			s.Attributes[catmaAttributeName] = v
+		}
+		if catmaValueReal != "None" {
+			v, _ := strconv.ParseFloat(catmaValueReal, 64)
+			s.Attributes[catmaAttributeName] = v
+		}
+		if catmaValueText != "None" {
+			s.Attributes[catmaAttributeName] = catmaValueText
+		}
+	}
+	return nil
+}
+
 // GetName returns the display name of a type.
 func (s *SDEType) GetName() string {
 	if name, ok := s.Attributes["mDisplayName"]; ok {
@@ -211,6 +239,19 @@ func (s *SDEType) getFromTags(t SDEType) ([]*SDEType, error) {
 	return types, nil
 }
 
+func (s *SDEType) HasTag(tag int) bool {
+	for k, v := range s.Attributes {
+		if strings.Contains(k, "tag.") {
+			if v, ok := v.(int); ok {
+				if v == tag {
+					return true
+				}
+			}
+		}
+	}
+	return false
+}
+
 // GetSharedTagTypes returns a slice of SDETypes that share the 'main' tag
 // of a type.
 func (s *SDEType) GetSharedTagTypes() ([]*SDEType, error) {
@@ -310,6 +351,46 @@ func (s *SDEType) Lookup(depth int) {
 	}
 }
 
+func (s SDEType) GetHighSlots() int {
+	return s.slotFinder("IH")
+}
+func (s SDEType) GetLowSlots() int {
+	return s.slotFinder("IL")
+}
+func (s SDEType) GetGrenadeSlots() int {
+	return s.slotFinder("GS")
+}
+func (s SDEType) GetEquipmentSlots() int {
+	return s.slotFinder("IE")
+}
+func (s SDEType) GetSidearmSlots() int {
+	return s.slotFinder("WS")
+}
+func (s SDEType) GetPrimarySlots() int {
+	return s.slotFinder("WP")
+}
+func (s SDEType) GetHeavySlots() int {
+	return s.slotFinder("WH")
+}
+
+func (s *SDEType) slotFinder(slotType string) int {
+	var c int
+	for k, v := range s.Attributes {
+		fmt.Println(k)
+		if strings.Contains(k, "mModuleSlots.") {
+			val := strings.Split(k, ".")
+			if val[2] == "slotType" {
+				if t, ok := v.(string); ok {
+					if t == slotType {
+						c += 1
+					}
+				}
+			}
+		}
+	}
+	return c
+}
+
 // Not documented for a reason. Don't ask.  Pretend this doesn't exist
 func (s *SDEType) ESBA() {
 	fmt.Println("ESBA")
@@ -327,4 +408,8 @@ func (s *SDEType) ESBA() {
 		t.GetAttributes()
 		fmt.Printf("%v with frequency %v at least %v but no more than %v\n", t.GetName(), f, mi, ma)
 	}
+}
+
+func (s *SDEType) genTemplateSlice(i int) []string {
+	return make([]string, i-1)
 }

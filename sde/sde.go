@@ -49,6 +49,22 @@ func Open(Version string) (SDE, error) {
 	return SDE{}, errors.New("No such version:" + Version)
 }
 
+func (s *SDE) GetTypesWithTag(tag int) []*SDEType {
+	types := make([]*SDEType, 0)
+	rows, err := s.DB.Query(fmt.Sprintf("SELECT TypeID FROM CatmaAttributes WHERE catmaValueInt == '%v'", tag))
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	for rows.Next() {
+		var typeID int
+		rows.Scan(&typeID)
+		t, _ := s.GetType(typeID)
+		t.GetAttributes()
+		types = append(types, &t)
+	}
+	return types
+}
+
 // GetType returns an SDEType of the given TypeID
 func (s *SDE) GetType(id int) (SDEType, error) {
 	if id <= 0 {
@@ -75,7 +91,38 @@ func (s *SDE) GetType(id int) (SDEType, error) {
 
 		rows.Scan(&nTypeID, &nTypeName)
 		t := SDEType{s, nTypeID, nTypeName, make(map[string]interface{}), false, false}
-		//t.GetAttributes()
+		t.GetAttributes()
+		return t, nil
+	}
+	return SDEType{}, errors.New("no such type")
+}
+
+// GetType returns an SDEType of the given TypeID
+func (s *SDE) GetTypeQ(id int) (SDEType, error) {
+	if id <= 0 {
+		return SDEType{}, errors.New("Given negative id")
+	}
+	defer Debug(time.Now())
+	if s.Cache {
+		t, d := Cache.GetType(id)
+		if !d {
+			t.FromCache = true
+			return t, errors.New("No such type.")
+		}
+		log.Info("Used cache")
+		return t, nil
+	}
+
+	rows, err := s.DB.Query(fmt.Sprintf("SELECT * FROM CatmaTypes WHERE TypeID == '%v'", id))
+	if err != nil {
+		return SDEType{}, err
+	}
+	if rows.Next() {
+		var nTypeID int
+		var nTypeName string
+
+		rows.Scan(&nTypeID, &nTypeName)
+		t := SDEType{s, nTypeID, nTypeName, make(map[string]interface{}), false, false}
 		return t, nil
 	}
 	return SDEType{}, errors.New("no such type")
@@ -124,7 +171,7 @@ func (s *SDE) GetTypeWhereNameContains(name string) ([]*SDEType, error) {
 	}
 
 	values := make([]*SDEType, 0)
-	rows, err := s.DB.Query(fmt.Sprintf("SELECT TypeID FROM CatmaAttributes WHERE catmaValueText LIKE '%%%v%%' AND catmaAttributeName == 'mDisplayName'", name))
+	rows, err := s.DB.Query(fmt.Sprintf("SELECT TypeID FROM CatmaAttributes WHERE catmaValueText LIKE '%%%v%%' AND catmaAttributeName == 'mDisplayName' ESCAPE '^'", name))
 	if err != nil {
 		return values, err
 	}
@@ -156,7 +203,7 @@ func (s *SDE) Search(search string) ([]*SDEType, error) {
 	values := make([]*SDEType, 0)
 	var err2 error
 	var rows *sql.Rows
-	rows, err2 = s.DB.Query(fmt.Sprintf("SELECT typeID, typeName FROM CatmaTypes WHERE typeName like '%%%v%%'", search))
+	rows, err2 = s.DB.Query(fmt.Sprintf("SELECT typeID, typeName FROM CatmaTypes WHERE typeName like '%%%v%%' ESCAPE '^'", search))
 
 	if err2 != nil {
 		log.LogError(err2.Error())
@@ -332,4 +379,19 @@ func (s *SDE) GetTypesByClassName(name string) (map[int]*SDEType, string) {
 		done++
 	}
 	return out, className
+}
+
+func (s *SDE) IterFunc(f func(TypeID int) bool) error {
+	if rows, err := s.DB.Query("SELECT typeID FROM CatmaTypes;"); err == nil {
+		for rows.Next() {
+			var typeID int
+			rows.Scan(&typeID)
+			if !f(typeID) {
+				break
+			}
+		}
+	} else {
+		return err
+	}
+	return nil
 }
