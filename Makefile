@@ -4,7 +4,6 @@ all:
 	go install github.com/THUNDERGROOVE/SDETool2/web
 	go install github.com/THUNDERGROOVE/SDETool2/types
 	go install github.com/THUNDERGROOVE/SDETool2/market
-	go install github.com/THUNDERGROOVE/SDETool2/market/graph
 	go install github.com/THUNDERGROOVE/SDETool2/log
 	go build -v
 deps:
@@ -13,4 +12,3 @@ deps:
 	go get github.com/gorilla/handlers
 	go get github.com/atotto/clipboard
 	go get github.com/lucasb-eyer/go-colorful
-	go get code.google.com/p/plotinum/...

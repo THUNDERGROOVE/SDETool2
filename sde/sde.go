@@ -171,7 +171,7 @@ func (s *SDE) GetTypeWhereNameContains(name string) ([]*SDEType, error) {
 	}
 
 	values := make([]*SDEType, 0)
-	rows, err := s.DB.Query(fmt.Sprintf("SELECT TypeID FROM CatmaAttributes WHERE catmaValueText LIKE '%%%v%%' AND catmaAttributeName == 'mDisplayName' ESCAPE '^'", name))
+	rows, err := s.DB.Query(fmt.Sprintf("SELECT TypeID FROM CatmaAttributes WHERE catmaValueText LIKE '%%%v%%' AND catmaAttributeName == 'mDisplayName'", name))
 	if err != nil {
 		return values, err
 	}
@@ -294,52 +294,65 @@ func (s *SDE) Dump() error {
 	return nil
 }
 
+type Progress struct {
+	Percent int
+	Current int
+	Total   int
+}
+
 // GobDump attempts to cache all types
-func (s *SDE) GobDump() {
+func (s *SDE) GobDump() chan Progress {
 	defer Debug(time.Now())
 
 	t := make(chan int)
 	done := make(chan bool)
 	var count int
 
-	fmt.Println("Starting caching process")
+	percent := make(chan Progress)
+
 	go func() {
-		r, _ := s.DB.Query("SELECT Count(*) FROM CatmaTypes")
-		r.Next()
+		fmt.Println("Starting caching process")
+		go func() {
+			r, _ := s.DB.Query("SELECT Count(*) FROM CatmaTypes")
+			r.Next()
 
-		r.Scan(&count)
+			r.Scan(&count)
 
-		rows, err := s.DB.Query("SELECT TypeID FROM CatmaTypes;")
-		if err != nil {
-			log.LogError("DBErr", err.Error())
+			rows, err := s.DB.Query("SELECT TypeID FROM CatmaTypes;")
+			if err != nil {
+				log.LogError("DBErr", err.Error())
+			}
+			for rows.Next() {
+				var nTypeID int
+				rows.Scan(&nTypeID)
+				t <- nTypeID
+			}
+			done <- true
+		}()
+		var i int
+		var ii int
+		for {
+			select {
+			case id := <-t:
+				ii = ii + 1
+				if i >= 10 {
+					log.Info("Saving cache in the case of a crash.")
+					SaveCache(fmt.Sprintf("%v.sde", s.Version))
+					i = 0
+				}
+				percent <- Progress{(ii / count), ii, count}
+
+				_, c := Cache.GetType(id)
+				if !c {
+					i = i + 1
+				}
+			case <-done:
+				close(percent)
+				break
+			}
 		}
-		for rows.Next() {
-			var nTypeID int
-			rows.Scan(&nTypeID)
-			t <- nTypeID
-		}
-		done <- true
 	}()
-	var i int
-	var ii int
-	for {
-		select {
-		case id := <-t:
-			ii = ii + 1
-			if i >= 10 {
-				fmt.Println("Saving cache in the case of a crash.")
-				SaveCache(fmt.Sprintf("%v.sde", s.Version))
-				i = 0
-			}
-			fmt.Println("Caching type", id, ii, "/", count)
-			_, c := Cache.GetType(id)
-			if !c {
-				i = i + 1
-			}
-		case <-done:
-			break
-		}
-	}
+	return percent
 }
 
 func (s *SDE) GetTypesByClassName(name string) (map[int]*SDEType, string) {

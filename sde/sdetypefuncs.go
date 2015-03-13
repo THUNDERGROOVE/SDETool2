@@ -128,7 +128,7 @@ func (s *SDEType) GetAttribute(attributeName string) error {
 }
 
 // GetName returns the display name of a type.
-func (s *SDEType) GetName() string {
+func (s SDEType) GetName() string {
 	if name, ok := s.Attributes["mDisplayName"]; ok {
 		if v, kk := name.(string); kk {
 			return v

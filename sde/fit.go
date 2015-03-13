@@ -81,7 +81,11 @@ type Stats struct {
 	HealShieldRate      int64   `sde:"mVICProp.healShieldRate"                      json:"shieldRecharge"`
 	ShieldDepletedDelay int64   `sde:"mVICProp.shieldRechargePauseOnShieldDepleted" json:"depletedDelay"`
 	CPU                 int64   `sde:"mVICProp.maxPowerReserve"                     json:"cpu"`
+	CPUUsed             int64   `json:"cpuUsed`
+	CPUPercent          int     `json:"cpuPercent"`
 	PG                  int64   `sde:"mVICProp.maxPowerReserve"                     json:"pg"`
+	PGUsed              int64   `json:"pgUsed"`
+	PGPercent           int     `json:"pgPercent"`
 	Stamina             float64 `sde:"mCharProp.maxStamina"                         json:"stamina"`
 	StaminaRecovery     float64 `sde:"mCharProp.staminaRecoveryPerSecond"           json:"staminaRecovery"`
 	ScanPrecision       int64   `sde:"mVICProp.signatureScanPrecision"              json:"scanPrecision"`
@@ -93,25 +97,34 @@ type Stats struct {
 // FillFields is an internal function used to fill all the extra non-json
 // within the SDEFit structure and sub structures.
 func (s *Fit) FillFields() {
+	log.Info("Filling fields for fit with type", s.Suit.TypeID)
 	defer Debug(time.Now())
 
 	if PrimarySDE == nil {
-		fmt.Printf("Error filling SDEFit fields the PrimarySDE is nil.	Set it with GiveSDE()\n")
+		log.LogError("Error filling SDEFit fields the PrimarySDE is nil.	Set it with GiveSDE()\n")
 		return
 	}
 	typeid, _ := strconv.Atoi(s.Suit.TypeID)
+	if typeid <= 0 {
+		log.LogError("Fill fields called with no suit")
+	}
 	t, err := PrimarySDE.GetType(typeid)
 	s.Suit.SDEType = &t
 	if err != nil {
-		fmt.Printf("Error filling SDEFit fields: %v\n", err.Error())
+		log.LogError("Error filling SDEFit fields:", err.Error())
 	}
 
 	for _, v := range s.Fitting.Modules {
 		tid, _ := strconv.Atoi(v.TypeID)
+		if tid <= 0 {
+			continue
+		} else {
+			log.Info(v.TypeID)
+		}
 		var err1 error
 		v.SDEType, err1 = PrimarySDE.GetType(tid)
 		if err1 != nil {
-			fmt.Printf("Error filling SDEFit fields: %v\n", err.Error())
+			log.LogError("Error filling SDEFit fields:", err.Error())
 		}
 	}
 }
@@ -142,6 +155,17 @@ func (s *Fit) Stats() *Stats {
 		}
 	}
 
+	// Static stats
+	if ss.PGUsed == 0 {
+		ss.PGPercent = 0
+	} else {
+		ss.PGPercent = int((ss.PGUsed / ss.PG) * 100)
+	}
+	if ss.CPUUsed == 0 {
+		ss.CPUUsed = 0
+	} else {
+		ss.CPUPercent = int((ss.CPUUsed / ss.PGUsed) * 100)
+	}
 	return ss
 }
 
