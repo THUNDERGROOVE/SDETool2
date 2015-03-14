@@ -100,8 +100,8 @@ func (s *SDEType) GetAttributes() error {
 }
 
 func (s *SDEType) GetAttribute(attributeName string) error {
-	rows, err := s.parentSDE.DB.Query(
-		fmt.Sprintf("SELECT catmaAttributeName, catmaValueInt, catmaValueReal, catmaValueText FROM CatmaAttributes WHERE TypeID == '%v' AND catmaAttributeName == '%v'", s.TypeID))
+
+	rows, err := PrimarySDE.DB.Query(fmt.Sprintf("SELECT catmaAttributeName, catmaValueInt, catmaValueReal, catmaValueText FROM CatmaAttributes WHERE TypeID == '%v' AND catmaAttributeName == '%v'", s.TypeID))
 	if err != nil {
 		return err
 	}

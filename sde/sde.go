@@ -13,6 +13,8 @@ import (
 	"github.com/THUNDERGROOVE/SDETool2/log"
 	_ "github.com/mattn/go-sqlite3" // Database driver
 	"os"
+	"runtime"
+	"runtime/debug"
 	"strconv"
 	"strings"
 	"time"
@@ -336,11 +338,13 @@ func (s *SDE) GobDump() chan Progress {
 			case id := <-t:
 				ii = ii + 1
 				if i >= 10 {
-					log.Info("Saving cache in the case of a crash.")
+					runtime.GC()
+					debug.FreeOSMemory()
+					log.Info("Saving cache and runnning GC and FreeOSMemory.")
 					SaveCache(fmt.Sprintf("%v.sde", s.Version))
 					i = 0
 				}
-				percent <- Progress{(ii / count), ii, count}
+				percent <- Progress{int((float64(ii) / float64(count)) * 100), ii, count}
 
 				_, c := Cache.GetType(id)
 				if !c {
