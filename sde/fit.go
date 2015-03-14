@@ -252,7 +252,7 @@ func (s *Stats) ToJSON() string {
 
 // applySkill applys a raw skill value
 func (f *Fit) applySkill(val float64, typ, stack, name string, level SkillLevel) {
-	if f.Suit.SDEType == nil {
+	if f.Suit.SDEType == nil || f.Suit.SDEType.Attributes == nil {
 		log.LogError("applySkill called with nil suit SDEType")
 		return
 	}
