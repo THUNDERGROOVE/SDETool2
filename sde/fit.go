@@ -256,26 +256,30 @@ func (f *Fit) applySkill(val float64, typ, stack, name string, level SkillLevel)
 		log.LogError("applySkill called with nil suit SDEType")
 		return
 	}
-	switch reflect.TypeOf(f.Suit.SDEType.Attributes[name]).Kind() {
-	case reflect.Int:
-		ov := f.Suit.SDEType.Attributes[name].(int)
+	if _, ok := f.Suit.SDEType.Attributes[name]; ok {
+		switch reflect.TypeOf(f.Suit.SDEType.Attributes[name]).Kind() {
+		case reflect.Int:
+			ov := f.Suit.SDEType.Attributes[name].(int)
 
-		for i := 1; i <= int(level); i++ {
-			ov = ov * int(val)
-		}
-		log.Info("Setting attribute", name, "to", ov)
-		f.Suit.SDEType.Attributes[name] = ov
-	case reflect.Float64:
-		ov := f.Suit.SDEType.Attributes[name].(float64)
+			for i := 1; i <= int(level); i++ {
+				ov = ov * int(val)
+			}
+			log.Info("Setting attribute", name, "to", ov)
+			f.Suit.SDEType.Attributes[name] = ov
+		case reflect.Float64:
+			ov := f.Suit.SDEType.Attributes[name].(float64)
 
-		for i := 1; i <= int(level); i++ {
-			ov = ov * val
-			log.Info("Applying level", i, ov)
+			for i := 1; i <= int(level); i++ {
+				ov = ov * val
+				log.Info("Applying level", i, ov)
+			}
+			log.Info("Setting attribute", name, "to", ov)
+			f.Suit.SDEType.Attributes[name] = ov
+		default:
+			log.LogError("Unsupported type in applySkill")
 		}
-		log.Info("Setting attribute", name, "to", ov)
-		f.Suit.SDEType.Attributes[name] = ov
-	default:
-		log.LogError("Unsupported type in applySkill")
+	} else {
+		log.LogError("applySkill called with name of attribute that doesn't exist.")
 	}
 
 }
