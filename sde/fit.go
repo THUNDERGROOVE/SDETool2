@@ -279,7 +279,7 @@ func (f *Fit) applySkill(val float64, typ, stack, name string, level SkillLevel)
 			log.LogError("Unsupported type in applySkill")
 		}
 	} else {
-		log.LogError("applySkill called with name of attribute that doesn't exist.")
+		log.LogError("applySkill called with name of attribute that doesn't exist:", name)
 	}
 
 }
