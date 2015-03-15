@@ -11,6 +11,7 @@ var (
 	UseCache *bool
 	Server   *bool
 	Port     *int
+	NoCache  *bool
 
 	// Selectors.  Things that chose the type to work with.
 	TypeName        *string
@@ -28,6 +29,9 @@ var (
 	Errors *bool
 	Info   *bool
 	Debug  *bool
+
+	// Utility
+	GenCache *bool
 )
 
 func init() {
@@ -36,6 +40,7 @@ func init() {
 	UseCache = flag.Bool("c", false, "Uses a cache file instead of a database.")
 	Server = flag.Bool("http", false, "Starts an SDETool server.")
 	Port = flag.Int("port", 80, "Port to be used")
+	NoCache = flag.Bool("nocache", false, "Use cache?")
 
 	// Selectors
 	TypeName = flag.String("tn", "", "A TypeName selector")
@@ -53,6 +58,9 @@ func init() {
 	Errors = flag.Bool("err", false, "Print errors")
 	Info = flag.Bool("info", false, "Print info")
 	Debug = flag.Bool("debug", false, "Prints all logging info")
+
+	// Utility
+	GenCache = flag.Bool("gencache", false, "Generate cache")
 
 	flag.Parse()
 

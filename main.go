@@ -49,6 +49,19 @@ func main() {
 		web.StartServer()
 	}
 
+	if *args.GenCache {
+		sde.LoadCache(fmt.Sprintf("%v.sde", SDE.Version))
+		progress := SDE.GobDump()
+		for {
+			p := <-progress
+			fmt.Printf("\r %v%% | %v / %v                 ", p.Percent, p.Current, p.Total)
+			if p.Current >= p.Total {
+				break
+			}
+		}
+		fmt.Println("\nDONE!")
+	}
+
 	if *args.Search != "" {
 		vals, err := SDE.Search(*args.Search)
 		if err != nil {
@@ -100,7 +113,7 @@ func main() {
 	}
 
 	if t == nil {
-		fmt.Println("No such type or no selectors used.")
+		PrintInfo()
 		return
 	}
 
