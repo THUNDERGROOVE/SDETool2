@@ -31,12 +31,12 @@ func (s *SDEType) ParentSDE() *SDE {
 // GetAttributes grabs the attributes for the type and applied them.  This is
 // used to speed up querries for simple lookups.
 func (s *SDEType) GetAttributes() error {
+	defer Debug(time.Now())
 	if s == nil {
 		log.LogError("SDEType is nil")
 		return errors.New("Type is nil")
 	}
 	if s.parentSDE == nil {
-		log.Info("Parent SDE not set, likely due to cache usage.  Setting from primary SDE")
 		if PrimarySDE == nil {
 			log.LogError("Primary SDE not set.  Returning error")
 			return errors.New("No parent SDE set")
@@ -64,7 +64,6 @@ func (s *SDEType) GetAttributes() error {
 	}
 
 	if s.parentSDE == nil {
-		log.Info("Parent SDE not set, likely due to cache usage.  Setting from primary SDE")
 		if PrimarySDE == nil {
 			log.LogError("Primary SDE not set.  Returning error")
 			return errors.New("No parent SDE set")
@@ -100,8 +99,36 @@ func (s *SDEType) GetAttributes() error {
 }
 
 func (s *SDEType) GetAttribute(attributeName string) error {
-
+	defer Debug(time.Now())
 	rows, err := PrimarySDE.DB.Query(fmt.Sprintf("SELECT catmaAttributeName, catmaValueInt, catmaValueReal, catmaValueText FROM CatmaAttributes WHERE TypeID == '%v' AND catmaAttributeName == '%v'", s.TypeID))
+	if err != nil {
+		return err
+	}
+	for rows.Next() {
+		var catmaAttributeName string
+		var catmaValueInt string
+		var catmaValueReal string
+		var catmaValueText string
+
+		rows.Scan(&catmaAttributeName, &catmaValueInt, &catmaValueReal, &catmaValueText)
+		if catmaValueInt != "None" {
+			v, _ := strconv.Atoi(catmaValueInt)
+			s.Attributes[catmaAttributeName] = v
+		}
+		if catmaValueReal != "None" {
+			v, _ := strconv.ParseFloat(catmaValueReal, 64)
+			s.Attributes[catmaAttributeName] = v
+		}
+		if catmaValueText != "None" {
+			s.Attributes[catmaAttributeName] = catmaValueText
+		}
+	}
+	return nil
+}
+
+func (s *SDEType) GetAttributesLike(attributeName string) error {
+	defer Debug(time.Now())
+	rows, err := PrimarySDE.DB.Query(fmt.Sprintf("SELECT catmaAttributeName, catmaValueInt, catmaValueReal, catmaValueText FROM CatmaAttributes WHERE TypeID == '%v' AND catmaAttributeName LIKE '%%%v%%'", s.TypeID))
 	if err != nil {
 		return err
 	}
@@ -317,6 +344,7 @@ func (s *SDEType) PrintTags() {
 }
 
 func (s *SDEType) IsFaction() bool {
+	defer Debug(time.Now())
 	if strings.Contains(s.GetName(), "Imperial") || strings.Contains(s.GetName(), "State") || strings.Contains(s.GetName(), "Federation") || strings.Contains(s.GetName(), "Republic") {
 		return true
 	}

@@ -52,6 +52,7 @@ func Open(Version string) (SDE, error) {
 }
 
 func (s *SDE) GetTypesWithTag(tag int) []*SDEType {
+	defer Debug(time.Now())
 	types := make([]*SDEType, 0)
 	rows, err := s.DB.Query(fmt.Sprintf("SELECT TypeID FROM CatmaAttributes WHERE catmaValueInt == '%v'", tag))
 	if err != nil {
@@ -69,17 +70,26 @@ func (s *SDE) GetTypesWithTag(tag int) []*SDEType {
 
 // GetType returns an SDEType of the given TypeID
 func (s *SDE) GetType(id int) (SDEType, error) {
+	defer Debug(time.Now())
+	t, err := s.GetTypeNoAttr(id)
+	if !s.Cache {
+		t.GetAttributes()
+	}
+	return t, err
+}
+
+// GetType returns an SDEType of the given TypeID
+func (s *SDE) GetTypeNoAttr(id int) (SDEType, error) {
+	defer Debug(time.Now())
 	if id <= 0 {
 		return SDEType{}, errors.New("Given negative id")
 	}
-	defer Debug(time.Now())
 	if s.Cache {
 		t, d := Cache.GetType(id)
 		if !d {
 			t.FromCache = true
 			return t, errors.New("No such type.")
 		}
-		log.Info("Used cache")
 		return t, nil
 	}
 
@@ -93,7 +103,6 @@ func (s *SDE) GetType(id int) (SDEType, error) {
 
 		rows.Scan(&nTypeID, &nTypeName)
 		t := SDEType{s, nTypeID, nTypeName, make(map[string]interface{}), false, false}
-		t.GetAttributes()
 		return t, nil
 	}
 	return SDEType{}, errors.New("no such type")
